@@ -847,9 +847,12 @@ section,
 
 .hero p {
   margin: 10px 0 0 0;
+  font-weight: bolder;
   font-size: 22px;
-  color: color-mix(in srgb, var(--default-color), transparent 30%);
+  color: color-mix(in srgb, var(--default-color));
 }
+
+
 
 @media (max-width: 992px) {
   .hero h1 {

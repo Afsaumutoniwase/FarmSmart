@@ -25,7 +25,7 @@
   <link href="../static/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
   <!-- Main CSS File -->
-  <link href="../static/css/main.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
 </head>
 
 <body class="index-page">
@@ -46,15 +46,15 @@
             <li><a href="#hero" class="active">Home</a></li>
             
             <li><a href="#about">About</a></li>
-            <li><a href="#services">Services</a></li>            
-            <li><a href="#testimonials">Testimonials</a></li>
+            <li><a href="#services">Services</a></li>  
+            <li><a href="{{ url_for('hydroponic') }}">Hydroponics</a></li>          
             <li><a href="#contact">Contact</a></li>
           </ul>
           <!-- Mobile menu toggle button -->
           <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
       </nav>
-      <a class="btn-getstarted" href="../templates/login.html">Get Started</a>
+      <a class="btn-getstarted" href="{{ url_for('login') }}">Get Started</a>
     </div>
   </header>
 
@@ -63,7 +63,7 @@
     <!-- Hero Section -->
     <section id="hero" class="hero section">
 
-      <img src="../static/img/hero-bg-abstract.jpg" alt="" data-aos="fade-in" class="">
+      <img src="{{ url_for('static', filename='img/hero-bg-abstract.jpg') }}" alt="" data-aos="fade-in" class="">
 
       <div class="container">
         <div class="row justify-content-center" data-aos="zoom-out">
@@ -73,12 +73,9 @@
           </div>
         </div>
         <div class="text-center" data-aos="zoom-out" data-aos-delay="100">
-          <a href="../templates/login.html" class="btn-get-started">Get Started</a>
+          <a href="{{ url_for('login') }}" class="btn-get-started">Get Started</a>
         </div>
 
-        
-          
-        </div>
       </div>
 
     </section><!-- /Hero Section -->
@@ -181,9 +178,8 @@
               <div class="icon">
                 <img itemprop="contentUrl" src="https://www.svgrepo.com/show/419971/hydroponic-soilless-farm.svg" alt="Hydroponic Soilless Farm SVG File" title="Hydroponic Soilless Farm SVG File" width="100" height="100">
               </div>
-              <a href="service-details.html" class="stretched-link">
                 <h3>Hydroponic Monitoring</h3>
-              </a>
+              
               <p>Track water usage and nutrient levels to maximize crop growth and resource efficiency.</p>
 
             </div>
@@ -194,9 +190,8 @@
               <div class="icon">
                 <img itemprop="contentUrl" src="https://www.svgrepo.com/show/324541/business-shop-woman.svg" alt="Business Shop Woman SVG File" title="Business Shop Woman SVG File" width="100" height="100">
               </div>
-              <a href="service-details.html" class="stretched-link">
                 <h3>Marketplace for Supplies</h3>
-              </a>
+              
               <p>Order farming supplies from trusted sellers through our integrated online marketplace.</p>
             </div>
           </div><!-- End Service Item -->
@@ -206,9 +201,8 @@
               <div class="icon">
                 <img itemprop="contentUrl" src="https://www.svgrepo.com/show/455660/team-group.svg" alt="Team Group SVG File" title="Team Group SVG File" width="100" height="100">
               </div>
-              <a href="service-details.html" class="stretched-link">
                 <h3>Community Support Forums</h3>
-              </a>
+              
               <p>Join discussions, share tips, and get advice from experts and other farmers in our online forums.</p>
             </div>
           </div><!-- End Service Item -->
@@ -219,9 +213,8 @@
                 <img itemprop="contentUrl" src="https://www.svgrepo.com/show/92433/interview.svg" alt="Interview SVG File" title="Interview SVG File" width="100" height="100">
 
               </div>
-              <a href="service-details.html" class="stretched-link">
                 <h3>Expert Consultations</h3>
-              </a>
+              
               <p>Access personalized recommendations from agricultural experts to optimize your farming practices.</p>
               <a href="service-details.html" class="stretched-link"></a>
             </div>
@@ -231,9 +224,8 @@
               <div class="icon">
                 <img itemprop="contentUrl" src="https://www.svgrepo.com/show/307751/data-analysis-examine.svg" alt="Data Analysis Examine SVG File" title="Data Analysis Examine SVG File" width="100" height="100">
               </div>
-              <a href="service-details.html" class="stretched-link">
                 <h3>Data Insights for Farmers</h3>
-              </a>
+              
               <p>Use our platform to gain insights into your farm’s performance and increase productivity.</p>
               <a href="service-details.html" class="stretched-link"></a>
             </div>
@@ -245,100 +237,13 @@
                 <img itemprop="contentUrl" src="https://www.svgrepo.com/show/494413/training-achievement-medal.svg" alt="Training Achievement Medal SVG File" title="Training Achievement Medal SVG File" width="100" height="100">
 
               </div>
-              <a href="service-details.html" class="stretched-link">
                 <h3>Training and Resources</h3>
-              </a>
+              
               <p>Learn the latest techniques with expert guides, video tutorials, and hands-on resources.</p>
               <a href="service-details.html" class="stretched-link"></a>
             </div>
           </div><!-- End Service Item -->
 
-        </div>
-
-      </div>
-
-    </section>
-    <!-- /Services Section -->
-    <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonials section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Testimonials</h2>
-        <p>Hear from our farmers who have transformed their farming practices with FarmSmart's innovative solutions.</p>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="swiper init-swiper" data-speed="600" data-delay="5000" data-breakpoints="{ &quot;320&quot;: { &quot;slidesPerView&quot;: 1, &quot;spaceBetween&quot;: 40 }, &quot;1200&quot;: { &quot;slidesPerView&quot;: 3, &quot;spaceBetween&quot;: 40 } }">
-          <script type="application/json" class="swiper-config">
-            {
-              "loop": true,
-              "speed": 600,
-              "autoplay": {
-                "delay": 5000
-              },
-              "slidesPerView": "auto",
-              "pagination": {
-                "el": ".swiper-pagination",
-                "type": "bullets",
-                "clickable": true
-              },
-              "breakpoints": {
-                "320": {
-                  "slidesPerView": 1,
-                  "spaceBetween": 40
-                },
-                "1200": {
-                  "slidesPerView": 3,
-                  "spaceBetween": 20
-                }
-              }
-            }
-          </script>
-          <div class="swiper-wrapper">
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <p>
-                  <i class="bi bi-quote quote-icon-left"></i>
-                  <span>FarmSmart has completely revolutionized my farm. I now grow more crops with less water, and the expert support has been invaluable. My yields are higher, and I can finally sustain farming all year round.</span>
-                  <i class="bi bi-quote quote-icon-right"></i>
-                </p>
-                <img src="../static/img/testimonials/testimonials-1.jpg" class="testimonial-img" alt="Farmer testimonial">
-                <h3>Jean M.</h3>
-                <h4>Farmer, Rwanda</h4>
-              </div>
-            </div><!-- End Testimonial Item -->
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <p>
-                  <i class="bi bi-quote quote-icon-left"></i>
-                  <span>FarmSmart’s platform has simplified my farm operations. I love the community support and expert advice. Hydroponics was new to me, but now it’s an essential part of my farming system, yielding better results.</span>
-                  <i class="bi bi-quote quote-icon-right"></i>
-                </p>
-                <img src="../static/img/testimonials/testimonials-3.jpg" class="testimonial-img" alt="Farmer testimonial">
-                <h3>Kwame A.</h3>
-                <h4>Urban Farmer, Ghana</h4>
-              </div>
-            </div><!-- End Testimonial Item -->
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <p>
-                  <i class="bi bi-quote quote-icon-left"></i>
-                  <span>With FarmSmart, I now have access to cutting-edge technology that helps me manage my crops and resources. I can farm smarter, save water, and grow healthier crops.</span>
-                  <i class="bi bi-quote quote-icon-right"></i>
-                </p>
-                <img src="../static/img/testimonials/testimonials-4.jpg" class="testimonial-img" alt="Farmer testimonial">
-                <h3>Mutesi Anne.</h3>
-                <h4>Freelancer Farmer, Rwanda</h4>
-              </div>
-            </div><!-- End Testimonial Item -->
-
-          </div>
-          <div class="swiper-pagination"></div>
         </div>
 
       </div>
@@ -354,8 +259,8 @@
             <div class="text-center">
               <h3>Ready to Revolutionize Your Farming?</h3>
               <p>Join FarmSmart today and unlock the power of hydroponic farming with cutting-edge technology, expert support, and community-driven solutions.</p>
-              <a class="cta-btn" href="../templates/login.html">Get Started for Free</a>
-              <a class="cta-btn" href="../templates/login.html">Learn More About Hydroponics</a>
+              <a class="cta-btn" href="{{ url_for('login') }}">Get Started for Free</a>
+              <a class="cta-btn" href="{{ url_for('hydroponic') }}">Learn More About Hydroponics</a>
             </div>
           </div>
         </div>
@@ -538,7 +443,7 @@
         
         <!-- About FarmSmart -->
         <div class="col-lg-5 col-md-12 footer-about">
-          <a href="index.html" class="logo d-flex align-items-center">
+          <a href="{{ url_for('home') }}" class="logo d-flex align-items-center">
             <span class="sitename">FarmSmart</span>
           </a>
           <p>FarmSmart empowers smallholder farmers by providing sustainable farming technologies, such as hydroponics and smart irrigation, that help increase yields, reduce water usage, and ensure food security across Africa.</p>
