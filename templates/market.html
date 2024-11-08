@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Market{% endblock %}
+
+{% block content %}
+    <h2>Market</h2>
+    <p>Browse hydroponic tools and place your order.</p>
+
+    <!-- Display Product List -->
+    <div class="product-list">
+        {% for product in products %}
+            <div class="product-item">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.description }}</p>
+                <p>Price: ${{ product.price }}</p>
+
+                <form method="POST" action="{{ url_for('market') }}">
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="number" name="quantity" min="1" value="1">
+                    <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Display Cart -->
+    <h3>Your Cart</h3>
+    <ul>
+        {% for item in cart %}
+            <li>{{ item['product']['name'] }} x{{ item['quantity'] }} - ${{ item['product']['price'] * item['quantity'] }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('add_product') }}">Add a new product</a>
+{% endblock %}
