@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+
+    <div class="bg-gray-100 p-8 rounded-md shadow-md text-center">
+        <div class="mb-4">
+            <svg class="w-12 h-12 mx-auto text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 10-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <h2 class="text-3xl font-bold mb-4 text-gray-800">Order Confirmed!</h2>
+        <p class="text-lg text-gray-600 mb-2">Thank you for your purchase! Your order has been successfully placed.</p>
+        <p class="text-gray-500">We will call you when your order is ready.</p>
+    </div>
+
+{% endblock %}

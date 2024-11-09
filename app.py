@@ -140,10 +140,142 @@ def add_product():
 
     return render_template('add_product.html')
 
+@app.route('/add_to_cart', methods=['POST'])
+def add_to_cart():
+    # Retrieve the product ID and quantity from the form
+    product_id = request.form.get('product_id')
+    quantity = request.form.get('quantity', 1)
+
+    # Convert quantity to an integer and check for valid values
+    try:
+        quantity = int(quantity)
+        if quantity <= 0:
+            raise ValueError("Quantity must be positive")
+    except ValueError:
+        flash("Invalid quantity provided.", "error")
+        return redirect(url_for('market'))  # Redirect to market page if there's an issue
+
+    # Check if the product ID is valid and exists in the database
+    product = Product.query.get(product_id)
+    if product:
+        # Ensure the 'cart' key exists in the session
+        if 'cart' not in session:
+            session['cart'] = []
+        
+        # Check if the product is already in the cart
+        existing_product = next((item for item in session['cart'] if item['product_id'] == product.id), None)
+        if existing_product:
+            # If the product is already in the cart, just update the quantity
+            existing_product['quantity'] += quantity
+        else:
+            # If the product is not in the cart, add it
+            session['cart'].append({
+            'product_id': product.id,
+            'name': product.name,
+            'price': product.price,
+            'quantity': quantity,
+            'total_price': product.price * quantity  # Adding total price directly to the cart
+        })
+        
+        session.modified = True  # Mark the session as modified
+        flash("Product added to cart!", "success")
+    else:
+        flash("Product not found.", "error")
+
+    return redirect(url_for('market'))  # Redirect to market page after adding to cart
 
 
-# In-memory "cart"
-user_cart = []  # Renamed from cart to user_cart
+@app.route('/remove_from_cart', methods=['POST'])
+def remove_from_cart():
+    product_id = int(request.form['product_id'])
+    
+    # Remove the product from the cart by filtering out the item with the matching product_id
+    session['cart'] = [item for item in session.get('cart', []) if item['product_id'] != product_id]
+    
+    # Ensure changes are saved to the session
+    session.modified = True
+    
+    flash("Product removed from cart!", "success")
+    return redirect(url_for('cart'))
+
+@app.route('/cart')
+def cart():
+    # Retrieve cart items from the session
+    cart_items = session.get('cart', [])
+    updated_cart = []
+
+    # Retrieve product details for each item in the cart from the database
+    total_price = 0
+    for item in cart_items:
+        product = Product.query.get(item['product_id'])
+        if product:
+            item_total = product.price * item['quantity']
+            total_price += item_total
+            updated_cart.append({
+                'product_id': product.id,
+                'name': product.name,
+                'price': product.price,
+                'quantity': item['quantity'],
+                'total_price': item_total
+            })
+
+    # Pass the updated cart and total price to the template
+    return render_template('cart.html', cart=updated_cart, total_price=total_price)
+
+@app.route('/checkout', methods=['GET', 'POST'])
+def checkout():
+    # Retrieve cart items from session
+    cart = session.get('cart', [])
+    total_price = sum(item['price'] * item['quantity'] for item in cart)
+
+    if request.method == 'POST':
+        # Get form data
+        full_name = request.form.get('full_name')
+        address = request.form.get('address')
+        phone = request.form.get('phone')
+        payment_method = request.form.get('payment_method')
+
+        # Validate Mobile Money payment
+        if payment_method == 'mobile_money':
+            momo_number = request.form.get('momo_number')
+            if not momo_number:
+                flash("Please enter your mobile number for Mobile Money payment.", 'error')
+                return redirect(url_for('checkout'))
+
+        # Validate Card payment
+        elif payment_method == 'card':
+            card_number = request.form.get('card_number')
+            card_cvv = request.form.get('card_cvv')
+            expiry_date = request.form.get('expiry_date')
+            if not card_number or not card_cvv or not expiry_date:
+                flash("Please fill in all card details (Card Number, CVV, Expiry Date).", 'error')
+                return redirect(url_for('checkout'))
+
+        # If payment details are valid, process the order
+        flash("Your order has been successfully placed!", 'success')
+
+        # Save order details in a temporary dictionary
+        order_details = {
+            'full_name': full_name,
+            'address': address,
+            'phone': phone,
+            'payment_method': payment_method,
+            'cart_items': cart,
+            'total_price': total_price,
+        }
+
+        # Clear the cart after successful checkout
+        session.pop('cart', None)
+
+        # Redirect to the order confirmation page
+        return redirect(url_for('order_confirmation'))
+
+    # Render the checkout page with the cart items and total price
+    return render_template('checkout.html', cart=cart, total_price=total_price)
+
+@app.route('/order_confirmation', methods=['GET'])
+def order_confirmation():
+    return render_template('order_confirmation.html')
 
 
 @app.route('/')
@@ -235,88 +367,10 @@ def profile():
 
     return render_template('profile.html', user=current_user)
 
-
-@app.route('/cart')
-def cart():
-    return render_template('cart.html', cart=session.get('cart', []))
-
-@app.route('/remove_from_cart', methods=['POST'])
-def remove_from_cart():
-    product_id = int(request.form['product_id'])
-    session['cart'] = [item for item in session['cart'] if item['product']['id'] != product_id]
-    session.modified = True  # Ensure changes are saved to session
-    return redirect(url_for('cart'))
-
-@app.route('/add_to_cart', methods=['POST'])
-def add_to_cart():
-    product_id = request.form.get('product_id')
-    quantity = request.form.get('quantity', 1)
-
-    # Check if product_id and quantity are correctly captured
-    print(f"Product ID: {product_id}, Quantity: {quantity}")
-    
-    if product_id and quantity:
-        product = next((p for p in products if p['id'] == int(product_id)), None)
-        if product:
-            # Ensure cart session key exists
-            if 'cart' not in session:
-                session['cart'] = []
-            
-            # Add item to the cart
-            session['cart'].append({'product': product, 'quantity': int(quantity)})
-            session.modified = True
-            flash("Product added to cart!", "success")
-        else:
-            flash("Product not found.", "error")
-    else:
-        flash("Invalid product or quantity.", "error")
-
-    return redirect(url_for('market'))
-
-
-@app.route('/checkout', methods=['GET', 'POST'])
-def checkout():
-    # Get the cart from session
-    cart = session.get('cart', [])
-    total_price = sum(item['product']['price'] * item['quantity'] for item in cart)
-
-    if request.method == 'POST':
-        # Get form data
-        full_name = request.form.get('full_name')
-        address = request.form.get('address')
-        phone = request.form.get('phone')
-        payment_method = request.form.get('payment_method')
-
-        # If the payment method is Mobile Money, just check if the phone number is entered
-        if payment_method == 'mobile_money':
-            momo_number = request.form.get('momo_number')
-            if not momo_number:
-                flash("Please enter your mobile number for Mobile Money payment.", 'error')
-                return redirect(url_for('checkout'))
-
-        # If the payment method is Card, check if all card details are entered
-        elif payment_method == 'card':
-            card_number = request.form.get('card_number')
-            card_cvv = request.form.get('card_cvv')
-            expiry_date = request.form.get('expiry_date')
-            if not card_number or not card_cvv or not expiry_date:
-                flash("Please fill in all card details (Card Number, CVV, Expiry Date).", 'error')
-                return redirect(url_for('checkout'))
-
-        # If all fields are filled, proceed with the "order placed" process
-        flash("Your order has been successfully placed!", 'success')
-        # Typically, here you would process the payment, save the order in the database, etc.
-        session.pop('cart', None)  # Empty the cart after checkout
-
-        return redirect(url_for('checkout'))  # Redirect to the same page to show the success message
-
-    return render_template('checkout.html', cart=cart, total_price=total_price)
-
 @app.route('/forums', methods=['GET', 'POST'])
 def forums():
     categories = Category.query.all()
     return render_template('forums.html', categories=categories)
-
 
 def create_default_categories():
     # Check if categories already exist

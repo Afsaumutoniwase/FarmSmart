@@ -6,22 +6,9 @@
     <div class="container mx-auto p-6">
         <h2 class="text-3xl font-semibold text-center mb-8">Checkout</h2>
 
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="mb-4">
-                        <div class="bg-{{ 'green' if category == 'success' else 'red' }}-500 text-white p-4 rounded-md">
-                            <p>{{ message }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Cart Summary Section -->
-            <div class="lg:w-2/3 bg-white shadow-md rounded-md p-6">
+            <div class="lg:w-3/5 bg-white shadow-md rounded-md p-6">
                 <h3 class="text-2xl font-semibold mb-4">Your Cart</h3>
 
                 {% if cart %}
@@ -29,10 +16,12 @@
                         {% for item in cart %}
                             <li class="flex justify-between items-center border-b py-3">
                                 <div class="flex items-center">
-                                    <img src="{{ url_for('static', filename='img/' + item['product']['image_url']) }}" alt="{{ item['product']['name'] }}" class="w-16 h-16 object-cover rounded-md mr-4">
-                                    <p class="text-lg font-medium">{{ item['product']['name'] }} x{{ item['quantity'] }}</p>
+                                    <div>
+                                        <p class="text-lg font-medium">{{ item['name'] }} x{{ item['quantity'] }}</p>
+                                        <p class="text-gray-600">${{ item['price'] }} each</p>
+                                    </div>
                                 </div>
-                                <p class="text-lg font-semibold">${{ item['product']['price'] * item['quantity'] }}</p>
+                                <p class="text-lg font-semibold">${{ item['price'] * item['quantity'] }}</p>
                             </li>
                         {% endfor %}
                     </ul>
@@ -48,60 +37,51 @@
             </div>
 
             <!-- Checkout Form Section -->
-            <div class="lg:w-1/3 bg-white shadow-md rounded-md p-6">
+            <div class="lg:w-2/5 bg-white shadow-md rounded-md p-6">
                 <h3 class="text-2xl font-semibold mb-4">Billing Information</h3>
 
-                <form method="POST">
-                    <!-- Full Name -->
-                    <div class="mb-4">
-                        <label for="full_name" class="block text-lg font-medium text-gray-700">Full Name</label>
-                        <input type="text" id="full_name" name="full_name" class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500" required>
+                <form action="{{ url_for('checkout') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label for="full_name" class="block text-gray-700">Full Name:</label>
+                        <input type="text" name="full_name" required class="w-full p-2 border rounded-md">
                     </div>
-
-                    <!-- Address -->
-                    <div class="mb-4">
-                        <label for="address" class="block text-lg font-medium text-gray-700">Address</label>
-                        <input type="text" id="address" name="address" class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500" required>
+                
+                    <div>
+                        <label for="address" class="block text-gray-700">Address:</label>
+                        <input type="text" name="address" required class="w-full p-2 border rounded-md">
                     </div>
-
-                    <!-- Phone Number -->
-                    <div class="mb-4">
-                        <label for="phone" class="block text-lg font-medium text-gray-700">Phone Number</label>
-                        <input type="tel" id="phone" name="phone" class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500" required>
+                
+                    <div>
+                        <label for="phone" class="block text-gray-700">Phone Number:</label>
+                        <input type="text" name="phone" required class="w-full p-2 border rounded-md">
                     </div>
-
-                    <!-- Payment Method -->
-                    <div class="mb-4">
-                        <label for="payment_method" class="block text-lg font-medium text-gray-700">Payment Method</label>
-                        <select id="payment_method" name="payment_method" class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500" required onchange="togglePaymentFields()">
-                           <option value="">Select Payment Method</option>
+                
+                    <div>
+                        <label for="payment_method" class="block text-gray-700">Payment Method:</label>
+                        <select name="payment_method" id="payment_method" onchange="togglePaymentFields()" required class="w-full p-2 border rounded-md">
+                            <option value="">Select Payment Method</option>
                             <option value="mobile_money">Mobile Money</option>
                             <option value="card">Card</option>
                         </select>
                     </div>
-
-                    <!-- Mobile Money Fields (Shown if Mobile Money is selected) -->
-                    <div id="momo_fields" class="hidden mb-4">
-                        <label for="momo_number" class="block text-lg font-medium text-gray-700">Mobile Money Number</label>
-                        <input type="tel" id="momo_number" name="momo_number" class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500">
+                
+                    <div id="mobile_money_fields" class="hidden">
+                        <label for="momo_number" class="block text-gray-700">Mobile Money Number:</label>
+                        <input type="text" name="momo_number" class="w-full p-2 border rounded-md">
                     </div>
-
-                    <!-- Card Payment Fields (Shown if Card is selected) -->
-                    <div id="card_fields" class="hidden mb-4">
-                        <label for="card_number" class="block text-lg font-medium text-gray-700">Card Number</label>
-                        <input type="text" id="card_number" name="card_number" class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500">
-
-                        <label for="card_cvv" class="block text-lg font-medium text-gray-700 mt-4">CVV</label>
-                        <input type="text" id="card_cvv" name="card_cvv" class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500">
-
-                        <label for="expiry_date" class="block text-lg font-medium text-gray-700 mt-4">Expiry Date (MM/YY)</label>
-                        <input type="text" id="expiry_date" name="expiry_date" class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500">
+                
+                    <div id="card_fields" class="hidden space-y-2">
+                        <label for="card_number" class="block text-gray-700">Card Number:</label>
+                        <input type="text" name="card_number" class="w-full p-2 border rounded-md">
+                        
+                        <label for="card_cvv" class="block text-gray-700">Card CVV:</label>
+                        <input type="text" name="card_cvv" class="w-full p-2 border rounded-md">
+                        
+                        <label for="expiry_date" class="block text-gray-700">Expiry Date (MM/YY):</label>
+                        <input type="text" name="expiry_date" class="w-full p-2 border rounded-md">
                     </div>
-
-                    <!-- Submit Button -->
-                    <div class="flex justify-center">
-                        <button type="submit" class="w-full py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-500 transition duration-300">Place Order</button>
-                    </div>
+                
+                    <button type="submit" class="w-full mt-4 bg-green-500 text-white p-3 rounded-md">Place Order</button>
                 </form>
             </div>
         </div>
@@ -111,15 +91,20 @@
         function togglePaymentFields() {
             const paymentMethod = document.getElementById('payment_method').value;
             if (paymentMethod === 'mobile_money') {
-                document.getElementById('momo_fields').classList.remove('hidden');
+                document.getElementById('mobile_money_fields').classList.remove('hidden');
                 document.getElementById('card_fields').classList.add('hidden');
             } else if (paymentMethod === 'card') {
                 document.getElementById('card_fields').classList.remove('hidden');
-                document.getElementById('momo_fields').classList.add('hidden');
+                document.getElementById('mobile_money_fields').classList.add('hidden');
             } else {
-                document.getElementById('momo_fields').classList.add('hidden');
+                document.getElementById('mobile_money_fields').classList.add('hidden');
                 document.getElementById('card_fields').classList.add('hidden');
             }
         }
     </script>
+    
+
 {% endblock %}
+
+
+    
