@@ -133,7 +133,82 @@ class Booking(db.Model):
 
     def __repr__(self):
         return f'<Booking {self.session_datetime} with Expert {self.expert_id}>'
-    
+class Message(db.Model):
+    __tablename__ = 'messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)  # The ID of the user who sent the message
+    expert_id = db.Column(db.Integer, db.ForeignKey('experts.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationship: A message belongs to one expert and one user
+    expert = db.relationship('Expert', backref=db.backref('messages', lazy=True))
+
+    def __init__(self, user_id, expert_id, content):
+        self.user_id = user_id
+        self.expert_id = expert_id
+        self.content = content
+
+    def __repr__(self):
+        return f'<Message from User {self.user_id} to Expert {self.expert_id}>'
+
+
+def create_default_categories():
+    # Check if categories already exist
+    if not Category.query.first():  # If no categories exist, add default ones
+        categories = [
+            Category(name='General Discussion', description='A place for general, discussions or questions.'),
+            Category(name='Introduction to Hydroponics', description='For beginners to learn about hydroponics.'),
+            Category(name='Hydroponic Systems', description='Discussing different hydroponic systems like NFT, DWC, and aeroponics.'),
+            Category(name='Nutrient Management', description='Learn how to manage nutrients in hydroponic farming.'),
+            Category(name='Hydroponic Crops', description='Discuss the types of crops that thrive in hydroponics.'),
+            Category(name='Technology in Hydroponics', description='Exploring technologies that aid hydroponic farming.'),
+            Category(name='Sustainability in Hydroponics', description='Discussing how hydroponics contributes to sustainable farming.'),
+            Category(name='Hydroponic Business Ideas', description='Discussing business opportunities in hydroponic farming.'),
+        ]
+        db.session.add_all(categories)
+        db.session.commit()
+
+def create_default_products():
+    # Check if any products already exist in the database
+    if not Product.query.first():  # If no products exist, add the default ones
+        default_products = [
+            Product(name="Hydroponic Kit", price=10, description="A complete kit for hydroponic farming.", image_url="kit.jpeg"),
+            Product(name="LED Grow Light", price=8, description="High-quality LED lights for optimal plant growth.", image_url="led.jpg"),
+            Product(name="pH Meter", price=5, description="Measure the pH levels in your hydroponic system.", image_url="ph.jpg"),
+            Product(name="Nutrient Solution", price=4, description="Essential nutrients for hydroponic plants.", image_url="solution.png"),
+            Product(name="Lettuce Seed", price=1, description="Very good lettuce seed.", image_url="lettuce.jpg"),
+        ]
+        db.session.add_all(default_products)
+        db.session.commit()
+def create_default_experts():
+    # Check if any experts already exist in the database
+    if not Expert.query.first():  # If no experts exist, add the default ones
+        default_experts = [
+            Expert(
+                name="Jane Smith",
+                profile_picture=url_for('static', filename='img/jane.jpg'),
+                specialization="Sustainable Agriculture",
+                bio="Jane specializes in sustainable farming practices and has been helping farmers for over a decade."
+            ),
+            Expert(
+                name="Mark Thompson",
+                profile_picture=url_for('static', filename='img/mark.jpg'),
+                specialization="Hydroponics",
+                bio="Mark is an expert in hydroponic farming systems, focusing on improving water use efficiency in agriculture."
+            ),
+            Expert(
+                name="Emily Green",
+                profile_picture=url_for('static', filename='img/emily.jpg'),
+                specialization="Horticulture",
+                bio="Emily is a horticulturist with expertise in plant cultivation and advanced growing techniques."
+            )
+        ]
+        # Add experts to the session and commit
+        db.session.add_all(default_experts)
+        db.session.commit()
+
 @app.route('/market', methods=['GET', 'POST'])
 def market():
     if request.method == 'POST':
@@ -408,73 +483,6 @@ def forums():
     categories = Category.query.all()
     return render_template('forums.html', categories=categories)
 
-def create_default_categories():
-    # Check if categories already exist
-    if not Category.query.first():  # If no categories exist, add default ones
-        categories = [
-            Category(name='General Discussion', description='A place for general, discussions or questions.'),
-            Category(name='Introduction to Hydroponics', description='For beginners to learn about hydroponics.'),
-            Category(name='Hydroponic Systems', description='Discussing different hydroponic systems like NFT, DWC, and aeroponics.'),
-            Category(name='Nutrient Management', description='Learn how to manage nutrients in hydroponic farming.'),
-            Category(name='Hydroponic Crops', description='Discuss the types of crops that thrive in hydroponics.'),
-            Category(name='Technology in Hydroponics', description='Exploring technologies that aid hydroponic farming.'),
-            Category(name='Sustainability in Hydroponics', description='Discussing how hydroponics contributes to sustainable farming.'),
-            Category(name='Hydroponic Business Ideas', description='Discussing business opportunities in hydroponic farming.'),
-        ]
-        db.session.add_all(categories)
-        db.session.commit()
-
-def create_default_products():
-    # Check if any products already exist in the database
-    if not Product.query.first():  # If no products exist, add the default ones
-        default_products = [
-            Product(name="Hydroponic Kit", price=10, description="A complete kit for hydroponic farming.", image_url="kit.jpeg"),
-            Product(name="LED Grow Light", price=8, description="High-quality LED lights for optimal plant growth.", image_url="led.jpg"),
-            Product(name="pH Meter", price=5, description="Measure the pH levels in your hydroponic system.", image_url="ph.jpg"),
-            Product(name="Nutrient Solution", price=4, description="Essential nutrients for hydroponic plants.", image_url="solution.png"),
-            Product(name="Lettuce Seed", price=1, description="Very good lettuce seed.", image_url="lettuce.jpg"),
-        ]
-        db.session.add_all(default_products)
-        db.session.commit()
-def create_default_experts():
-    # Check if any experts already exist in the database
-    if not Expert.query.first():  # If no experts exist, add the default ones
-        default_experts = [
-            Expert(
-                name="Dr. John Doe",
-                profile_picture="https://example.com/images/john_doe.jpg",
-                specialization="Machine Learning",
-                bio="Dr. John is an expert in artificial intelligence and machine learning with over 15 years of experience."
-            ),
-            Expert(
-                name="Jane Smith",
-                profile_picture="https://example.com/images/jane_smith.jpg",
-                specialization="Sustainable Agriculture",
-                bio="Jane specializes in sustainable farming practices and has been helping farmers for over a decade."
-            ),
-            Expert(
-                name="Mark Thompson",
-                profile_picture="https://example.com/images/mark_thompson.jpg",
-                specialization="Hydroponics",
-                bio="Mark is an expert in hydroponic farming systems, focusing on improving water use efficiency in agriculture."
-            ),
-            Expert(
-                name="Sara Lee",
-                profile_picture="https://example.com/images/sara_lee.jpg",
-                specialization="Agricultural Technology",
-                bio="Sara has a deep knowledge of technology integration in agriculture, specifically AI and IoT in farm management."
-            ),
-            Expert(
-                name="Emily Green",
-                profile_picture="https://example.com/images/emily_green.jpg",
-                specialization="Horticulture",
-                bio="Emily is a horticulturist with expertise in plant cultivation and advanced growing techniques."
-            )
-        ]
-        # Add experts to the session and commit
-        db.session.add_all(default_experts)
-        db.session.commit()
-
 @app.route('/category/<int:category_id>')
 def view_category(category_id):
     category = Category.query.get(category_id)
@@ -595,8 +603,49 @@ def send_support():
 
 @app.route('/expert', methods=['GET', 'POST'])
 def expert():
+    # Fetch available experts from the database
+    experts = Expert.query.all()
 
-    return render_template('expert.html')
+    # Handle booking form submission
+    if request.method == 'POST':
+        # Extract data from the form
+        expert_id = request.form.get('expert_id')
+        session_date = request.form.get('session_date')
+        session_time = request.form.get('session_time')
+        
+        # Combine date and time to create a datetime object
+        session_datetime = datetime.strptime(f"{session_date} {session_time}", '%Y-%m-%d %H:%M')
+        
+        # Assuming user is logged in, use the current user ID
+        user_id = 1  # Replace with the actual logged-in user's ID
+
+        # Create a new booking
+        new_booking = Booking(user_id=user_id, expert_id=expert_id, session_datetime=session_datetime)
+        db.session.add(new_booking)
+        db.session.commit()
+        
+        flash('Your session has been successfully booked!', 'success')
+        return redirect(url_for('expert'))
+
+    return render_template('expert.html', experts=experts)
+
+@app.route('/send_message/<int:expert_id>', methods=['POST'])
+@login_required  # Assuming you're using login_required to check if the user is logged in
+def send_message(expert_id):
+    user_id = current_user.id  # Assuming you're using Flask-Login for user management
+    message_content = request.form.get('message_content')
+    
+    if message_content:
+        # Create a new message in the database
+        message = Message(user_id=user_id, expert_id=expert_id, content=message_content)
+        db.session.add(message)
+        db.session.commit()
+
+        flash('Your message has been sent!', 'success')
+        return redirect(url_for('expert'))  # Redirect back to the expert list page
+    else:
+        flash('Please enter a message to send.', 'danger')
+        return redirect(url_for('expert'))
 
 
 @app.route('/dashboard')
