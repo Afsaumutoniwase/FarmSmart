@@ -22,18 +22,17 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-class User(db.Model, UserMixin):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    role = db.Column(db.String(255))
-    password_hash = db.Column(db.String(255))
-    address = db.Column(db.String(255))
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    role = db.Column(db.String(50))
+    address = db.Column(db.String(200))
     phone = db.Column(db.String(20))
-    profile_image_url = db.Column(db.String(255))
-    profile_complete = db.Column(db.Boolean, default=False)  # New field to track profile completion
+    profile_image_url = db.Column(db.String(200), nullable=True)
+    profile_complete = db.Column(db.Boolean, default=False)
 
-    # This is optional but recommended for setting a hashed password
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -98,6 +97,43 @@ class Product(db.Model):
     def __repr__(self):
         return f'<Product {self.name}>'
 
+class Expert(db.Model):
+    __tablename__ = 'experts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    profile_picture = db.Column(db.String(255), nullable=True)  # URL to profile picture
+    specialization = db.Column(db.String(100), nullable=False)
+    bio = db.Column(db.Text, nullable=True)
+    
+    # Relationship: An expert can have multiple bookings
+    bookings = db.relationship('Booking', backref='expert', lazy=True)
+    
+    def __init__(self, name, profile_picture, specialization, bio):
+        self.name = name
+        self.profile_picture = profile_picture
+        self.specialization = specialization
+        self.bio = bio
+
+    def __repr__(self):
+        return f'<Expert {self.name}>'
+
+class Booking(db.Model):
+    __tablename__ = 'bookings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    session_datetime = db.Column(db.DateTime, nullable=False)  # Combined date and time
+    user_id = db.Column(db.Integer, nullable=False)  # Assuming the user is logged in and their ID is accessible
+    expert_id = db.Column(db.Integer, db.ForeignKey('experts.id'), nullable=False)
+    
+    def __init__(self, user_id, expert_id, session_datetime):
+        self.user_id = user_id
+        self.expert_id = expert_id
+        self.session_datetime = session_datetime
+
+    def __repr__(self):
+        return f'<Booking {self.session_datetime} with Expert {self.expert_id}>'
+    
 @app.route('/market', methods=['GET', 'POST'])
 def market():
     if request.method == 'POST':
@@ -331,7 +367,6 @@ def login():
     # For GET request, simply render the login page
     return render_template('login.html')
 
-
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -367,6 +402,7 @@ def profile():
 
     return render_template('profile.html', user=current_user)
 
+
 @app.route('/forums', methods=['GET', 'POST'])
 def forums():
     categories = Category.query.all()
@@ -399,6 +435,44 @@ def create_default_products():
             Product(name="Lettuce Seed", price=1, description="Very good lettuce seed.", image_url="lettuce.jpg"),
         ]
         db.session.add_all(default_products)
+        db.session.commit()
+def create_default_experts():
+    # Check if any experts already exist in the database
+    if not Expert.query.first():  # If no experts exist, add the default ones
+        default_experts = [
+            Expert(
+                name="Dr. John Doe",
+                profile_picture="https://example.com/images/john_doe.jpg",
+                specialization="Machine Learning",
+                bio="Dr. John is an expert in artificial intelligence and machine learning with over 15 years of experience."
+            ),
+            Expert(
+                name="Jane Smith",
+                profile_picture="https://example.com/images/jane_smith.jpg",
+                specialization="Sustainable Agriculture",
+                bio="Jane specializes in sustainable farming practices and has been helping farmers for over a decade."
+            ),
+            Expert(
+                name="Mark Thompson",
+                profile_picture="https://example.com/images/mark_thompson.jpg",
+                specialization="Hydroponics",
+                bio="Mark is an expert in hydroponic farming systems, focusing on improving water use efficiency in agriculture."
+            ),
+            Expert(
+                name="Sara Lee",
+                profile_picture="https://example.com/images/sara_lee.jpg",
+                specialization="Agricultural Technology",
+                bio="Sara has a deep knowledge of technology integration in agriculture, specifically AI and IoT in farm management."
+            ),
+            Expert(
+                name="Emily Green",
+                profile_picture="https://example.com/images/emily_green.jpg",
+                specialization="Horticulture",
+                bio="Emily is a horticulturist with expertise in plant cultivation and advanced growing techniques."
+            )
+        ]
+        # Add experts to the session and commit
+        db.session.add_all(default_experts)
         db.session.commit()
 
 @app.route('/category/<int:category_id>')
@@ -467,6 +541,62 @@ def reply_to_post():
     
     return redirect(url_for('view_post', post_id=post_id))
 
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def account_settings():
+    if request.method == 'POST':
+        # Handle the change password functionality
+        if 'change_password' in request.form:
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+
+            # Verify current password
+            if not current_user.check_password(current_password):
+                flash('Incorrect current password.', 'error')
+            elif new_password != confirm_password:
+                flash('New password and confirmation do not match.', 'error')
+            else:
+                # Update password
+                current_user.set_password(new_password)
+                db.session.commit()
+                flash('Password updated successfully.', 'success')
+
+        # Handle the delete account functionality
+        elif 'delete_profile' in request.form:
+            db.session.delete(current_user)
+            db.session.commit()
+            flash('Your account has been deleted successfully.', 'success')
+            return redirect(url_for('login'))  # Redirect to the login page after deletion
+
+        return redirect(url_for('account_settings'))  # Ensure the function name matches here
+
+    return render_template('settings.html', user=current_user)  # Template rendering
+@app.route('/help')
+def help():   
+    return render_template('help.html', title="Help")
+
+@app.route('/help/contact', methods=['POST'])
+@login_required
+def send_support():
+    # Handle form data
+    name = request.form.get('name')
+    email = request.form.get('email')
+    message = request.form.get('message')
+
+    # Send an email or store it in the database (this is a placeholder)
+    # For now, let's just flash a success message
+    flash('Your message has been sent successfully. Our team will get back to you shortly.', 'success')
+
+    # You can also add logic to send the email or store the message
+    # Example: send_email(name, email, message)
+
+    return redirect(url_for('help_page'))  # Redirect back to the help page
+
+@app.route('/expert', methods=['GET', 'POST'])
+def expert():
+
+    return render_template('expert.html')
 
 
 @app.route('/dashboard')
@@ -477,17 +607,7 @@ def dashboard():
 def hydroponic_monitor():
     return render_template('hydroponics.html', title="Hydroponic")
 
-@app.route('/expert')
-def expert():
-    return render_template('expert.html', title="Book an Expert")
 
-@app.route('/settings')
-def settings():   
-    return render_template('settings.html', title="Settings")
-
-@app.route('/help')
-def help():   
-    return render_template('help.html', title="Help")
 
 @app.route('/logout')
 def logout():   
@@ -499,6 +619,5 @@ if __name__ == '__main__':
         db.create_all()  # This will create tables if they don't exist
         create_default_categories()
         create_default_products()
-
-
+        create_default_experts()
     app.run(debug=True)

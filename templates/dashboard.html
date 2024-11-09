@@ -1,38 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-        <title>Dashboard</title>
-        <link rel="icon" href="{{ url_for('static', filename='img/leaf.jpg') }}" type="image/x-icon">
-        <link rel="stylesheet" href="../static/css/dashboard.css">
-        <script type="text/javascript" src="//code.jquery.com/jquery-1.10.1.js"></script>
-    </head>
-    <body>
-        <div class="sidebar">
-            <div class="sidebar-header">Company</div>
-            <div class="sidebar-menu">
-                <a href="#profile"><span class="glyphicon glyphicon-user"></span> Profile</a>
-                <a href="#hydroponic"><span class="glyphicon glyphicon-leaf"></span> Hydroponic</a>
-                <a href="#expert"><span class="glyphicon glyphicon-briefcase"></span> Book an Expert</a>
-                <a href="#forums"><span class="glyphicon glyphicon-comment"></span> Forums</a>
-                <a href="#market"><span class="glyphicon glyphicon-shopping-cart"></span> Market</a>
-                <a href="#settings"><span class="glyphicon glyphicon-cog"></span> Settings</a>
-                <a href="#help"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
-                <a href="#logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-            </div>
-        </div>
+{% extends 'base.html' %}
 
-        <div class="content">
-            <h1>Welcome to your dashboard</h1>
-        </div>
+{% block title %}Dashboard{% endblock %}
 
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
-        <script src="../static/js/dashboard.js"></script>
-    </body>
-</html>
+{% block content %}
+
+
+
+{% endblock %}

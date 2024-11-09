@@ -1,15 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Book an Expert</title>
-    <link rel="stylesheet" href="../static/css/dashboard.css">
-</head>
-<body>
-    <div class="content">
-        <h2>Book an Expert</h2>
-        <p>Schedule a consultation with an agricultural expert.</p>
-        <!-- Include a booking form or calendar here -->
+{% extends 'base.html' %}
+
+{% block title %}Book an Expert{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col items-center text-center mt-8">
+        <h1 class="text-3xl font-semibold mb-4">Book an Expert</h1>
+        <h4 class="text-gray-600 mb-8">Choose an expert and book a session with them.</h4>
     </div>
-</body>
-</html>
+
+    <!-- Display Flash Messages if any -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} text-center">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Experts List Section -->
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-8">
+        {% for expert in experts %}
+        <div class="bg-white shadow-lg rounded-lg p-6 text-center">
+            <img src="{{ expert.profile_picture }}" alt="{{ expert.name }}" class="w-32 h-32 rounded-full mx-auto mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">{{ expert.name }}</h3>
+            <p class="text-gray-600">{{ expert.specialization }}</p>
+            <p class="text-gray-600">{{ expert.bio }}</p>
+            <a href="#bookModal{{ expert.id }}" data-toggle="modal" class="mt-4 inline-block py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition">Book Session</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Modal for Booking Session -->
+    {% for expert in experts %}
+    <div id="bookModal{{ expert.id }}" class="modal fade" tabindex="-1" aria-labelledby="bookModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookModalLabel">Book a Session with {{ expert.name }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="POST" action="{{ url_for('book_expert', expert_id=expert.id) }}">
+                    <div class="modal-body">
+                        <!-- Date and Time Selection -->
+                        <div class="space-y-4">
+                            <div>
+                                <label for="session_date" class="text-sm font-medium text-gray-700">Select Date</label>
+                                <input type="date" id="session_date" name="session_date" class="w-full p-3 border border-gray-300 rounded-md" required>
+                            </div>
+                            <div>
+                                <label for="session_time" class="text-sm font-medium text-gray-700">Select Time</label>
+                                <input type="time" id="session_time" name="session_time" class="w-full p-3 border border-gray-300 rounded-md" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+{% endblock %}

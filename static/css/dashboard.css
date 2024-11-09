@@ -193,3 +193,19 @@ a {
     border-radius: 3px;
     margin-left: 10px;
 }
+.alert {
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.alert-success {
+  background-color: var(--border-color);
+  color: white;
+}
+
+.alert-error {
+  background-color: var(--error-background);
+  color: white;
+}
