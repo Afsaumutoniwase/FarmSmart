@@ -1,15 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Forums</title>
-    <link rel="stylesheet" href="../static/css/dashboard.css">
-</head>
-<body>
-    <div class="content">
-        <h2>Forums</h2>
-        <p>Join discussions with other farmers and experts.</p>
-        <!-- Forum posts, reply form, or search functionality -->
+{% extends 'base.html' %}
+
+{% block title %}Forums{% endblock %}
+
+{% block content %}
+    <div class="container mx-auto p-6">
+        <div class="flex flex-col items-center text-center">
+            <h1 class="text-3xl font-semibold mb-6">Welcome to the Forums</h1>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                    <div class="bg-green-500 text-white p-4 rounded-md">
+                        <p>{{ messages[0][0] }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Forum Categories -->
+        <div class="mb-6">
+            <div class="flex flex-col items-center text-center">
+                <h3 class="text-2xl font-semibold mb-4">Forum Categories</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for category in categories %}
+                    <div class="bg-gradient-to-r from-green-100 via-grey-200 to-white-300 shadow-lg rounded-md p-6 hover:shadow-xl transition duration-300 ease-in-out">
+                        <div class="text-center mb-4">
+                            <h4 class="text-2xl font-bold text-gray-800">{{ category.name }}</h4>
+                            <p class="text-gray-600 mt-4">{{ category.description }}</p>
+                        </div>
+                        
+                        <div class="flex justify-center mt-8">
+                            <a href="{{ url_for('view_category', category_id=category.id) }}" class="bg-green-600 text-white hover:bg-green-500 focus:ring-green-500 focus:ring-opacity-50 py-2 px-6 rounded-md text-center transition duration-300 ease-in-out no-underline">
+                                View Posts
+                            </a>
+                        </div>
+                        
+                        
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-</body>
-</html>
+{% endblock %}

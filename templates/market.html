@@ -3,34 +3,59 @@
 {% block title %}Market{% endblock %}
 
 {% block content %}
-    <h2>Market</h2>
-    <p>Browse hydroponic tools and place your order.</p>
+    <div class="market-page">
 
-    <!-- Display Product List -->
-    <div class="product-list">
-        {% for product in products %}
-            <div class="product-item">
-                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
-                <h3>{{ product.name }}</h3>
-                <p>{{ product.description }}</p>
-                <p>Price: ${{ product.price }}</p>
+        <!-- Top Cart Button -->
+        <div class="cart-button">
+            <!-- Redirects to the cart page -->
+            <a href="{{ url_for('cart') }}" class="cart-link">
+                🛒 <span class="cart-count">{{ cart|length }}</span>
+            </a>
+        </div>
 
-                <form method="POST" action="{{ url_for('market') }}">
-                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                    <input type="number" name="quantity" min="1" value="1">
-                    <button type="submit" class="add-to-cart-btn">Add to Cart</button>
-                </form>
+        <!-- Introduction Section -->
+        <div class="intro-section">
+            <div class="flex flex-col items-center text-center">
+                <h1 class="text-3xl font-semibold mb-6">Welcome to Our Market</h1>
+                <h4 class="text-white mb-6">Explore our range of hydroponic tools and accessories for your farming needs.</h4>
             </div>
-        {% endfor %}
+            
+            <div class="info-cards">
+                <div class="card">🌱 Hydroponic Kits</div>
+                <div class="card">💡 LED Grow Lights</div>
+                <div class="card">📏 pH Meters</div>
+                <div class="card">💧 Nutrient Solutions</div>
+                <div class="card">📦 More Accessories</div>
+            </div>
+        </div>
+
+        <!-- Product List Section -->
+        <div class="product-list">
+            {% for product in products %}
+                <div class="product-item">
+                    <img src="{{ url_for('static', filename='img/' + product.image_url) }}" alt="{{ product.name }}" class="rounded-full w-40 h-40 object-cover mx-auto mb-4">
+
+
+                    <h3>{{ product.name }}</h3>
+                    <p>{{ product.description }}</p>
+                    <p>Price: ${{ product.price }}</p>
+                    
+                    <form method="POST" action="{{ url_for('add_to_cart') }}">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="number" name="quantity" min="1" value="1">
+                        <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Link to Add New Product -->
+        <div class="flex justify-center mt-8">
+            <a href="{{ url_for('add_product') }}" 
+               class="bg-green-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 shadow-lg">
+                Add a new product
+            </a>
+        </div>
+        
     </div>
-
-    <!-- Display Cart -->
-    <h3>Your Cart</h3>
-    <ul>
-        {% for item in cart %}
-            <li>{{ item['product']['name'] }} x{{ item['quantity'] }} - ${{ item['product']['price'] * item['quantity'] }}</li>
-        {% endfor %}
-    </ul>
-
-    <a href="{{ url_for('add_product') }}">Add a new product</a>
 {% endblock %}
