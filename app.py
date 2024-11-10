@@ -652,11 +652,6 @@ def send_message(expert_id):
 def dashboard():
     return render_template("dashboard.html")
 
-@app.route('/hydroponic-monitor')
-def hydroponic_monitor():
-    return render_template('hydroponics.html', title="Hydroponic")
-
-
 
 @app.route('/logout')
 def logout():   
