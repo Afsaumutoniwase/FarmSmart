@@ -188,19 +188,19 @@ def create_default_experts():
         default_experts = [
             Expert(
                 name="Jane Smith",
-                profile_picture=url_for('static', filename='img/jane.jpg'),
+                profile_picture='/static/img/jane.jpg',
                 specialization="Sustainable Agriculture",
                 bio="Jane specializes in sustainable farming practices and has been helping farmers for over a decade."
             ),
             Expert(
                 name="Mark Thompson",
-                profile_picture=url_for('static', filename='img/mark.jpg'),
+                profile_picture='/static/img/mark.jpg',
                 specialization="Hydroponics",
                 bio="Mark is an expert in hydroponic farming systems, focusing on improving water use efficiency in agriculture."
             ),
             Expert(
                 name="Emily Green",
-                profile_picture=url_for('static', filename='img/emily.jpg'),
+                profile_picture='/static/img/emily.jpg',
                 specialization="Horticulture",
                 bio="Emily is a horticulturist with expertise in plant cultivation and advanced growing techniques."
             )
@@ -208,6 +208,7 @@ def create_default_experts():
         # Add experts to the session and commit
         db.session.add_all(default_experts)
         db.session.commit()
+
 
 @app.route('/market', methods=['GET', 'POST'])
 def market():
