@@ -1,17 +1,17 @@
 :root {
-    --bg-color: #ecfccb;           
+    --bg-color: rgb(226 232 240);           
     --secondary-bg-color: #a2ca71;           
     --sidebar-header-height: 100px;
     --sidebar-footer-height: 230px;
     --text-color: #444444;              
     --secondary-text-color: #444444;      
-    --border-color: #387f39;              
+    --border-color: rgb(2 6 23);              
     --accent-color: #a2ca71;              
     --accent-hover-color: #8dba5e;         
     --success-background: #edf7ee;         
     --warning-background: #ffd27f;         
     --error-background: #ff6b6b;          
-      --input-border-color: #dddddd;        
+    --input-border-color: #dddddd;        
     --input-focus-color: var(--accent-color); 
     --contrast-color: #ffffff;             
     --graph-grid-color: #eeeeee;          
@@ -68,7 +68,7 @@
   }
   
   .sidebar-menu a:hover {
-    background-color: slategray;
+    background-color: rgb(100 116 139);
     color: var(--text-color);
   }
 
@@ -76,7 +76,7 @@
 
 
 .sidebar-menu a.active {
-    background-color: var(--bg-color);
+    background-color: rgb(100 116 139);
     color: var(--text-color);
     font-weight: bold;
 }

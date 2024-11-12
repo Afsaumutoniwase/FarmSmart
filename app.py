@@ -118,6 +118,7 @@ class Booking(db.Model):
     session_datetime = db.Column(db.DateTime, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     expert_id = db.Column(db.Integer, db.ForeignKey('experts.id'), nullable=False)
+    status = db.Column(db.String(50), default='Pending')  # Added for managing status
     
     user = db.relationship('User', backref='user_bookings')  # Unique backref for User
     expert = db.relationship("Expert", back_populates="bookings", overlaps="expert_ref")
@@ -130,6 +131,7 @@ class Message(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
+    reply = db.Column(db.Text, nullable=True)  # New field for replies
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     expert_id = db.Column(db.Integer, db.ForeignKey('experts.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -436,7 +438,6 @@ def login():
             flash('Registration successful! Please log in.')
             return redirect(url_for('login'))
 
-        # Handle login
         elif request.form.get('form_type') == 'login':
             user = User.query.filter_by(email=request.form['email']).first()
             if user and user.check_password(request.form['password']):
@@ -453,14 +454,93 @@ def login():
                 if user.role == 'farmer':
                     return redirect(url_for('dashboard'))
                 elif user.role == 'expert':
-                    return redirect(url_for('expert_dashboard'))
-                
+                    return redirect(url_for('expert_dashboard'))  # Redirect to expert_booking
+
             flash("Invalid credentials", "error")
             return redirect(url_for('login'))
 
     # For GET request, simply render the login page
     return render_template('login.html')
 
+@app.route('/expert-profile', methods=['GET', 'POST'])
+@login_required
+def expert_profile():
+    if request.method == 'POST':
+        # Get form data
+        username = request.form.get('username', current_user.username)
+        email = request.form.get('email', current_user.email)
+        role = request.form.get('role', current_user.role)
+        address = request.form.get('address', current_user.address)
+        phone = request.form.get('phone', current_user.phone)
+
+        # Handle profile image upload
+        if 'profileImageInput' in request.files:
+            file = request.files['profileImageInput']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filepath = os.path.join('static/uploads', filename)
+                os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
+                file.save(filepath)
+                current_user.profile_image_url = f"/static/uploads/{filename}"
+            else:
+                flash("Invalid image format. Allowed formats are png, jpg, jpeg, and gif.", "error")
+
+        # Update user data and mark profile as complete
+        current_user.username = username
+        current_user.email = email
+        current_user.address = address
+        current_user.phone = phone
+        current_user.profile_complete = True
+        db.session.commit()  # Save changes to the database
+
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('expert_dashboard'))  # Redirect after update
+
+    return render_template('expert-profile.html', user=current_user)
+
+@app.route('/expert-reply_message/<int:message_id>', methods=['POST'])
+@login_required
+def expert_reply_message(message_id):
+    expert_id = current_user.id
+    message = Message.query.get_or_404(message_id)
+    
+    if message.expert_id != expert_id:
+        flash('You are not authorized to reply to this message.', 'danger')
+        return redirect(url_for('expert_dashboard'))
+
+    reply_content = request.form.get('reply_content')
+    
+    if reply_content:
+        message.reply = reply_content  # Save the reply in the message
+        db.session.commit()
+
+        flash('Your reply has been sent!', 'success')
+        return redirect(url_for('expert_dashboard'))
+    else:
+        flash('Please enter a reply to send.', 'danger')
+        return redirect(url_for('expert_dashboard'))
+
+@app.route('/update_booking_status/<int:booking_id>/<status>', methods=['POST'])
+@login_required
+def update_booking_status(booking_id, status):
+    expert_id = current_user.id
+    booking = Booking.query.get_or_404(booking_id)
+
+    if booking.expert_id != expert_id:
+        flash('You are not authorized to modify this booking.', 'danger')
+        return redirect(url_for('expert_dashboard'))
+
+    if status not in ['Accepted', 'Denied']:
+        flash('Invalid status.', 'danger')
+        return redirect(url_for('expert_dashboard'))
+
+    booking.status = status
+    db.session.commit()
+
+    flash(f'Booking has been {status.lower()}!', 'success')
+
+    # You can add email notifications here if you want to notify the user about the status change
+    return redirect(url_for('expert_dashboard'))
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -497,8 +577,6 @@ def profile():
         return redirect(url_for('dashboard'))  # Redirect after update
 
     return render_template('profile.html', user=current_user)
-
-
 
 @app.route('/forums', methods=['GET', 'POST'])
 def forums():
@@ -606,6 +684,10 @@ def account_settings():
 def help():   
     return render_template('help.html', title="Help")
 
+
+
+
+
 @app.route('/help/contact', methods=['POST'])
 @login_required
 def send_support():
@@ -623,25 +705,20 @@ def send_support():
 
     return redirect(url_for('help'))  # Redirect back to the help page
 
+
 @app.route('/expert', methods=['GET', 'POST'])
 def expert():
-    # Fetch available experts from the database
     experts = Expert.query.all()
 
-    # Handle booking form submission
     if request.method == 'POST':
-        # Extract data from the form
         expert_id = request.form.get('expert_id')
         session_date = request.form.get('session_date')
         session_time = request.form.get('session_time')
         
-        # Combine date and time to create a datetime object
         session_datetime = datetime.strptime(f"{session_date} {session_time}", '%Y-%m-%d %H:%M')
         
-        # Assuming user is logged in, use the current user ID
         user_id = 1  # Replace with the actual logged-in user's ID
 
-        # Create a new booking
         new_booking = Booking(user_id=user_id, expert_id=expert_id, session_datetime=session_datetime)
         db.session.add(new_booking)
         db.session.commit()
@@ -669,52 +746,6 @@ def send_message(expert_id):
         flash('Please enter a message to send.', 'danger')
         return redirect(url_for('expert'))
 
-
-@app.route('/dashboard')
-def dashboard():
-    return render_template("dashboard.html")
-
-@app.route('/logout')
-def logout():   
-    return render_template('login.html', title="Logout")
-
-@app.route('/expert-profile')
-@login_required
-def expert_profile():
-    if request.method == 'POST':
-        # Get form data
-        username = request.form.get('username', current_user.username)
-        email = request.form.get('email', current_user.email)
-        role = request.form.get('role', current_user.role)
-        address = request.form.get('address', current_user.address)
-        phone = request.form.get('phone', current_user.phone)
-
-        # Handle profile image upload
-        if 'profileImageInput' in request.files:
-            file = request.files['profileImageInput']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join('static/uploads', filename)
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
-                file.save(filepath)
-                current_user.profile_image_url = f"/static/uploads/{filename}"
-            else:
-                flash("Invalid image format. Allowed formats are png, jpg, jpeg, and gif.", "error")
-
-        # Update user data and mark profile as complete
-        current_user.username = username
-        current_user.email = email
-        current_user.address = address
-        current_user.phone = phone
-        current_user.profile_complete = True
-        db.session.commit()  # Save changes to the database
-
-        flash("Profile updated successfully!", "success")
-        return redirect(url_for('expert-dashboard'))  # Redirect after update
-
-    return render_template('expert-profile.html', user=current_user)
-
-
 @app.route('/expert-dashboard')
 @login_required
 def expert_dashboard():
@@ -724,6 +755,15 @@ def expert_dashboard():
     messages = Message.query.filter_by(expert_id=expert_id).all()
     
     return render_template('expert-bookings.html', bookings=bookings, messages=messages)
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template("dashboard.html")
+
+@app.route('/logout')
+def logout():   
+    return render_template('login.html', title="Logout")
+
 
 @app.route('/expert-settings', methods=['GET', 'POST'])
 @login_required

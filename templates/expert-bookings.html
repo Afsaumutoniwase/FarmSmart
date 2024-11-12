@@ -5,50 +5,73 @@
 {% block content %}
 <h1 class="text-3xl font-semibold text-center mt-8 mb-6">Expert Dashboard</h1>
 
-<div class="flex gap-8 mx-4 mt-8">
-    <!-- Bookings Card -->
-    <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
-        <h2 class="text-xl font-semibold mb-4">Your Bookings</h2>
-        {% if bookings %}
-        <table class="min-w-full table-auto">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-4 py-2 text-left">Client</th>
-                    <th class="px-4 py-2 text-left">Session Date & Time</th>
-                    <th class="px-4 py-2 text-left">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for booking in bookings %}
-                <tr class="border-b">
-                    <td class="px-4 py-2">{{ booking.user.name }}</td>  <!-- Accessing user's name -->
-                    <td class="px-4 py-2">{{ booking.session_datetime.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td class="px-4 py-2">{{ booking.status or "Pending" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="text-gray-600">No bookings yet.</p>
-        {% endif %}
-    </div>
+<!-- Bookings Card -->
+<div class="flex-1 bg-white shadow-lg rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-4">Your Bookings</h2>
+    {% if bookings %}
+    <table class="min-w-full table-auto">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="px-4 py-2 text-left">Client</th>
+                <th class="px-4 py-2 text-left">Session Date & Time</th>
+                <th class="px-4 py-2 text-left">Status</th>
+                <th class="px-4 py-2 text-left">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr class="border-b">
+                <td class="px-4 py-2">{{ booking.user.name }}</td>
+                <td class="px-4 py-2">{{ booking.session_datetime.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="px-4 py-2">{{ booking.status }}</td>
+                <td class="px-4 py-2">
+                    {% if booking.status == "Pending" %}
+                    <form action="{{ url_for('update_booking_status', booking_id=booking.id, status='Accepted') }}" method="POST">
+                        <button type="submit" class="bg-green-500 text-white py-1 px-4 rounded">Accept</button>
+                    </form>
+                    <form action="{{ url_for('update_booking_status', booking_id=booking.id, status='Denied') }}" method="POST">
+                        <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded">Deny</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-gray-600">No bookings yet.</p>
+    {% endif %}
+</div>
+
 
     <!-- Messages Card -->
-    <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
-        <h2 class="text-xl font-semibold mb-4">Your Messages</h2>
-        {% if messages %}
-        <ul class="space-y-4">
-            {% for message in messages %}
-            <li class="border-b pb-4">
-                <p class="font-semibold">{{ message.user.name }}:</p>
-                <p class="text-gray-600">{{ message.content }}</p>
-                <p class="text-sm text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="text-gray-600">No messages yet.</p>
-        {% endif %}
-    </div>
+<div class="flex-1 bg-white shadow-lg rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-4">Your Messages</h2>
+    {% if messages %}
+    <ul class="space-y-4">
+        {% for message in messages %}
+        <li class="border-b pb-4">
+            <p class="font-semibold">{{ message.user.name }}:</p>
+            <p class="text-gray-600">{{ message.content }}</p>
+            <p class="text-sm text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+            
+            {% if message.reply %}
+                <div class="mt-2">
+                    <p><strong>Your Reply:</strong></p>
+                    <p>{{ message.reply }}</p>
+                </div>
+            {% else %}
+                <form action="{{ url_for('expert_reply_message', message_id=message.id) }}" method="POST" class="mt-4">
+                    <textarea name="reply_content" class="w-full p-2 border rounded-md" placeholder="Write your reply here" required></textarea>
+                    <button type="submit" class="mt-2 bg-blue-500 text-white py-2 px-4 rounded">Send Reply</button>
+                </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-gray-600">No messages yet.</p>
+    {% endif %}
 </div>
+
 {% endblock %}
