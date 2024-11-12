@@ -47,6 +47,7 @@ class Reply(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('replies', lazy=True))
+    
     def __repr__(self):
         return f'<Reply {self.id} to Post {self.post_id}>'
 
@@ -81,7 +82,6 @@ class Post(db.Model):
     user = db.relationship('User', backref=db.backref('posts', lazy=True))
     category = db.relationship('Category', backref=db.backref('posts', lazy=True))
     
-    # Relationship to Reply: Define backref once here
     replies = db.relationship('Reply', backref='post', cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -106,14 +106,7 @@ class Expert(db.Model):
     specialization = db.Column(db.String(100), nullable=False)
     bio = db.Column(db.Text, nullable=True)
     
-    # Relationship: An expert can have multiple bookings
-    bookings = db.relationship('Booking', backref='expert', lazy=True)
-    
-    def __init__(self, name, profile_picture, specialization, bio):
-        self.name = name
-        self.profile_picture = profile_picture
-        self.specialization = specialization
-        self.bio = bio
+    bookings = db.relationship("Booking", back_populates="expert", overlaps="expert_ref")
 
     def __repr__(self):
         return f'<Expert {self.name}>'
@@ -122,37 +115,30 @@ class Booking(db.Model):
     __tablename__ = 'bookings'
     
     id = db.Column(db.Integer, primary_key=True)
-    session_datetime = db.Column(db.DateTime, nullable=False)  # Combined date and time
-    user_id = db.Column(db.Integer, nullable=False)  # Assuming the user is logged in and their ID is accessible
+    session_datetime = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     expert_id = db.Column(db.Integer, db.ForeignKey('experts.id'), nullable=False)
     
-    def __init__(self, user_id, expert_id, session_datetime):
-        self.user_id = user_id
-        self.expert_id = expert_id
-        self.session_datetime = session_datetime
+    user = db.relationship('User', backref='user_bookings')  # Unique backref for User
+    expert = db.relationship("Expert", back_populates="bookings", overlaps="expert_ref")
 
     def __repr__(self):
         return f'<Booking {self.session_datetime} with Expert {self.expert_id}>'
+
 class Message(db.Model):
     __tablename__ = 'messages'
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)  # The ID of the user who sent the message
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     expert_id = db.Column(db.Integer, db.ForeignKey('experts.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relationship: A message belongs to one expert and one user
     expert = db.relationship('Expert', backref=db.backref('messages', lazy=True))
-
-    def __init__(self, user_id, expert_id, content):
-        self.user_id = user_id
-        self.expert_id = expert_id
-        self.content = content
+    user = db.relationship('User', backref=db.backref('messages', lazy=True))
 
     def __repr__(self):
         return f'<Message from User {self.user_id} to Expert {self.expert_id}>'
-
 
 def create_default_categories():
     # Check if categories already exist

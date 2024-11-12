@@ -21,7 +21,7 @@
             <tbody>
                 {% for booking in bookings %}
                 <tr class="border-b">
-                    <td class="px-4 py-2">{{ booking.user.name }}</td>
+                    <td class="px-4 py-2">{{ booking.user.name }}</td>  <!-- Accessing user's name -->
                     <td class="px-4 py-2">{{ booking.session_datetime.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td class="px-4 py-2">{{ booking.status or "Pending" }}</td>
                 </tr>
