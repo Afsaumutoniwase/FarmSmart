@@ -21,7 +21,7 @@
         <tbody>
             {% for booking in bookings %}
             <tr class="border-b">
-                <td class="px-4 py-2">{{ booking.user.name }}</td>
+                <td class="px-4 py-2">{{ booking.user.username }}</td>  <!-- Displaying user's name -->
                 <td class="px-4 py-2">{{ booking.session_datetime.strftime('%Y-%m-%d %H:%M') }}</td>
                 <td class="px-4 py-2">{{ booking.status }}</td>
                 <td class="px-4 py-2">
@@ -43,35 +43,30 @@
     {% endif %}
 </div>
 
-
-    <!-- Messages Card -->
+<!-- Messages Card -->
 <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
     <h2 class="text-xl font-semibold mb-4">Your Messages</h2>
-    {% if messages %}
-    <ul class="space-y-4">
-        {% for message in messages %}
-        <li class="border-b pb-4">
-            <p class="font-semibold">{{ message.user.name }}:</p>
-            <p class="text-gray-600">{{ message.content }}</p>
-            <p class="text-sm text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
-            
-            {% if message.reply %}
-                <div class="mt-2">
-                    <p><strong>Your Reply:</strong></p>
-                    <p>{{ message.reply }}</p>
-                </div>
-            {% else %}
-                <form action="{{ url_for('expert_reply_message', message_id=message.id) }}" method="POST" class="mt-4">
-                    <textarea name="reply_content" class="w-full p-2 border rounded-md" placeholder="Write your reply here" required></textarea>
-                    <button type="submit" class="mt-2 bg-blue-500 text-white py-2 px-4 rounded">Send Reply</button>
-                </form>
-            {% endif %}
-        </li>
+    {% if bookings %}
+        {% for booking in bookings %}
+            <h3 class="font-semibold mb-2">Booking with {{ booking.user.username }} (Session on {{ booking.session_datetime }})</h3>
+            <ul class="space-y-4">
+                {% for message in booking.messages %}
+                    <li class="border-b pb-4">
+                        <p class="font-semibold">{{ message.sender.username }}:</p>
+                        <p class="text-gray-600">{{ message.content }}</p>
+                        <p class="text-sm text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+            <form action="{{ url_for('expert_reply_message', booking_id=booking.id) }}" method="POST" class="mt-4">
+                <textarea name="reply_content" class="w-full p-2 border rounded-md" placeholder="Write your reply here" required></textarea>
+                <button type="submit" class="mt-2 bg-blue-500 text-white py-2 px-4 rounded">Send Reply</button>
+            </form>
         {% endfor %}
-    </ul>
     {% else %}
-    <p class="text-gray-600">No messages yet.</p>
+        <p class="text-gray-600">No messages yet.</p>
     {% endif %}
 </div>
+
 
 {% endblock %}

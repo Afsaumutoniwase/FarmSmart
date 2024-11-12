@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-8 py-8">
+    <h1 class="text-4xl font-semibold mb-8 text-center">My Bookings</h1>
+
+    {% for booking in bookings %}
+    <div class="bg-white shadow-lg rounded-lg mb-8 p-6 lg:p-8">
+        <div class="border-b border-gray-200 pb-4 mb-4">
+            <h5 class="text-2xl font-semibold">Booking with Expert {{ booking.expert_id }} on {{ booking.session_datetime.strftime('%Y-%m-%d %H:%M') }}</h5>
+            <p class="text-lg text-gray-700">Status: <span class="font-medium">{{ booking.status }}</span></p>
+        </div>
+        
+        <!-- Message Thread -->
+        <div class="mb-4">
+            <h6 class="text-xl font-semibold mb-2">Message Thread</h6>
+            {% for message in booking.messages %}
+                <div class="p-4 mb-2 bg-gray-100 rounded-lg">
+                    <strong class="text-green-600">{{ 'Me' if message.sender_id == current_user.id else 'Expert' }}:</strong>
+                    <p class="text-gray-800">{{ message.content }}</p>
+                    <small class="text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Reply Form -->
+        <form action="{{ url_for('reply_message', booking_id=booking.id) }}" method="POST">
+            <textarea name="reply_content" class="w-full p-4 border border-gray-300 rounded-lg mb-4" rows="4" placeholder="Type your reply here..."></textarea>
+            <button type="submit" class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">Send Reply</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

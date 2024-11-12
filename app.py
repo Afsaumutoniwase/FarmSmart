@@ -1,6 +1,7 @@
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 import os
+from sqlalchemy.orm import joinedload
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import render_template, Flask, request, redirect, url_for, session
@@ -127,20 +128,20 @@ class Booking(db.Model):
         return f'<Booking {self.session_datetime} with Expert {self.expert_id}>'
 
 class Message(db.Model):
-    __tablename__ = 'messages'
-
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    reply = db.Column(db.Text, nullable=True)  # New field for replies
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    expert_id = db.Column(db.Integer, db.ForeignKey('experts.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'))
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    is_read = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    booking = db.relationship('Booking', backref=db.backref('messages', lazy=True))
 
-    expert = db.relationship('Expert', backref=db.backref('messages', lazy=True))
-    user = db.relationship('User', backref=db.backref('messages', lazy=True))
+    sender = db.relationship('User', backref='sent_messages', foreign_keys=[sender_id])
 
     def __repr__(self):
-        return f'<Message from User {self.user_id} to Expert {self.expert_id}>'
+        return f'<Message from User {self.sender_id} in Booking {self.booking_id}>'
 
 def create_default_categories():
     # Check if categories already exist
@@ -498,27 +499,53 @@ def expert_profile():
 
     return render_template('expert-profile.html', user=current_user)
 
-@app.route('/expert-reply_message/<int:message_id>', methods=['POST'])
+@app.route('/expert-reply_message/<int:booking_id>', methods=['POST'])
 @login_required
-def expert_reply_message(message_id):
-    expert_id = current_user.id
-    message = Message.query.get_or_404(message_id)
+def expert_reply_message(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
     
-    if message.expert_id != expert_id:
+    # Ensure only the booking's user or expert can reply
+    if current_user.id not in [booking.user_id, booking.expert_id]:
         flash('You are not authorized to reply to this message.', 'danger')
         return redirect(url_for('expert_dashboard'))
 
     reply_content = request.form.get('reply_content')
     
     if reply_content:
-        message.reply = reply_content  # Save the reply in the message
+        # Log the current user's message
+        new_message = Message(content=reply_content, booking_id=booking_id, sender_id=current_user.id)
+        db.session.add(new_message)
         db.session.commit()
 
         flash('Your reply has been sent!', 'success')
-        return redirect(url_for('expert_dashboard'))
     else:
         flash('Please enter a reply to send.', 'danger')
-        return redirect(url_for('expert_dashboard'))
+
+    return redirect(url_for('expert_dashboard'))
+
+@app.route('/reply_message/<int:booking_id>', methods=['POST'])
+@login_required
+def reply_message(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+
+    # Ensure only the booking's user or expert can reply
+    if current_user.id not in [booking.user_id, booking.expert_id]:
+        flash('You are not authorized to reply to this message.', 'danger')
+        return redirect(url_for('my_bookings'))
+
+    reply_content = request.form.get('reply_content')
+    
+    if reply_content:
+        # Add a new message for the booking
+        new_message = Message(content=reply_content, booking_id=booking_id, sender_id=current_user.id)
+        db.session.add(new_message)
+        db.session.commit()
+
+        flash('Your reply has been sent!', 'success')
+    else:
+        flash('Please enter a reply to send.', 'danger')
+
+    return redirect(url_for('my_bookings'))
 
 @app.route('/update_booking_status/<int:booking_id>/<status>', methods=['POST'])
 @login_required
@@ -541,6 +568,68 @@ def update_booking_status(booking_id, status):
 
     # You can add email notifications here if you want to notify the user about the status change
     return redirect(url_for('expert_dashboard'))
+
+@app.route('/expert-dashboard')
+@login_required
+def expert_dashboard():
+    expert_id = current_user.id  # Assuming the logged-in user is the expert
+    
+    # Fetch the expert's bookings with messages and user details
+    bookings = Booking.query.filter_by(expert_id=expert_id).options(joinedload(Booking.user), joinedload(Booking.messages)).all()
+    
+    return render_template('expert-bookings.html', bookings=bookings)
+
+@app.route('/expert', methods=['GET', 'POST'])
+def expert():
+    experts = Expert.query.all()
+
+    if request.method == 'POST':
+        expert_id = request.form.get('expert_id')
+        session_date = request.form.get('session_date')
+        session_time = request.form.get('session_time')
+        
+        # Combine the session date and time into a datetime object
+        session_datetime = datetime.strptime(f"{session_date} {session_time}", '%Y-%m-%d %H:%M')
+        
+        # Get the currently logged-in user's ID using Flask-Login's current_user
+        user_id = current_user.id  # This captures the logged-in user's ID
+
+        # Create a new booking with the logged-in user's ID
+        new_booking = Booking(user_id=user_id, expert_id=expert_id, session_datetime=session_datetime)
+        db.session.add(new_booking)
+        db.session.commit()
+        
+        flash('Your session has been successfully booked!', 'success')
+        return redirect(url_for('expert'))
+
+    return render_template('expert.html', experts=experts)
+
+
+@app.route('/send_message/<int:booking_id>', methods=['POST'])
+@login_required  # Ensure user is logged in before sending a message
+def send_message(booking_id):
+    user_id = current_user.id  # Get the logged-in user's ID
+    message_content = request.form.get('message_content')
+    
+    if message_content:
+        # Create a new message with the correct field names
+        message = Message(sender_id=user_id, booking_id=booking_id, content=message_content)
+        db.session.add(message)
+        db.session.commit()
+
+        flash('Your message has been sent!', 'success')
+        return redirect(url_for('expert_dashboard', booking_id=booking_id))  # Redirect back to the booking details page
+    else:
+        flash('Please enter a message to send.', 'danger')
+        return redirect(url_for('expert_dashboard', booking_id=booking_id))
+
+    
+@app.route('/my_bookings')
+@login_required
+def my_bookings():
+    # Retrieve all bookings for the logged-in user
+    bookings = Booking.query.filter_by(user_id=current_user.id).all()
+    return render_template('my_bookings.html', bookings=bookings)
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -705,56 +794,6 @@ def send_support():
 
     return redirect(url_for('help'))  # Redirect back to the help page
 
-
-@app.route('/expert', methods=['GET', 'POST'])
-def expert():
-    experts = Expert.query.all()
-
-    if request.method == 'POST':
-        expert_id = request.form.get('expert_id')
-        session_date = request.form.get('session_date')
-        session_time = request.form.get('session_time')
-        
-        session_datetime = datetime.strptime(f"{session_date} {session_time}", '%Y-%m-%d %H:%M')
-        
-        user_id = 1  # Replace with the actual logged-in user's ID
-
-        new_booking = Booking(user_id=user_id, expert_id=expert_id, session_datetime=session_datetime)
-        db.session.add(new_booking)
-        db.session.commit()
-        
-        flash('Your session has been successfully booked!', 'success')
-        return redirect(url_for('expert'))
-
-    return render_template('expert.html', experts=experts)
-
-@app.route('/send_message/<int:expert_id>', methods=['POST'])
-@login_required  # Assuming you're using login_required to check if the user is logged in
-def send_message(expert_id):
-    user_id = current_user.id  # Assuming you're using Flask-Login for user management
-    message_content = request.form.get('message_content')
-    
-    if message_content:
-        # Create a new message in the database
-        message = Message(user_id=user_id, expert_id=expert_id, content=message_content)
-        db.session.add(message)
-        db.session.commit()
-
-        flash('Your message has been sent!', 'success')
-        return redirect(url_for('expert'))  # Redirect back to the expert list page
-    else:
-        flash('Please enter a message to send.', 'danger')
-        return redirect(url_for('expert'))
-
-@app.route('/expert-dashboard')
-@login_required
-def expert_dashboard():
-    expert_id = current_user.id  # Assuming the logged-in user is the expert and using Flask-Login
-    # Fetch the expert's bookings and messages
-    bookings = Booking.query.filter_by(expert_id=expert_id).all()
-    messages = Message.query.filter_by(expert_id=expert_id).all()
-    
-    return render_template('expert-bookings.html', bookings=bookings, messages=messages)
 
 @app.route('/dashboard')
 def dashboard():
