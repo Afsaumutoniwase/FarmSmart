@@ -1,4 +1,4 @@
-  :root {
+:root {
     --bg-color: #ecfccb;           
     --secondary-bg-color: #a2ca71;           
     --sidebar-header-height: 100px;
@@ -26,7 +26,6 @@
   
   body {
     font-family: Arial, sans-serif;
-    background-color: var(--bg-color);
     color: var(--text-color);
   }
   
@@ -69,9 +68,11 @@
   }
   
   .sidebar-menu a:hover {
-    background-color: var(--contrast-color);
+    background-color: slategray;
     color: var(--text-color);
   }
+
+
 
 
 .sidebar-menu a.active {

@@ -1,0 +1,54 @@
+{% extends 'expert-base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-3xl font-semibold mb-8 text-center text-gray-800">
+        {{ post.title }}
+    </h2>
+
+    <!-- Post content -->
+    <div class="bg-white shadow-md rounded-md p-6 mb-6">
+        <p class="text-gray-600 mt-2">{{ post.content }}</p>
+        <p class="mt-2 text-sm text-gray-500">
+            {% if post.user %}
+                By {{ post.user.username }}
+            {% else %}
+                By Anonymous
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Replies Section -->
+    <div class="mb-6">
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800">Replies</h3>
+        {% if replies %}
+        <div class="space-y-6">
+            {% for reply in replies %}
+            <div class="bg-gray-50 p-4 rounded-md shadow-sm">
+                <p class="text-gray-700">{{ reply.content }}</p>
+                <p class="text-sm text-gray-500 mt-1">
+                    Posted by: {% if reply.user %} {{ reply.user.username }} {% else %} Anonymous {% endif %}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">No replies yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Reply Form -->
+    <form action="{{ url_for('expert_reply_to_post') }}" method="POST" class="mt-6 space-y-4">
+        <textarea name="reply_content" required placeholder="Write your reply here..." class="w-full p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 focus:outline-none" rows="4"></textarea>
+        
+        <!-- Reply Author Selection -->
+        <div class="flex items-center justify-between">
+           
+            <button type="submit" class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">Reply</button>
+        </div>
+        <input type="hidden" name="post_id" value="{{ post.id }}">
+    </form>
+</div>
+{% endblock %}

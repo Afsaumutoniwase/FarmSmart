@@ -187,19 +187,19 @@ def create_default_experts():
     if not Expert.query.first():  # If no experts exist, add the default ones
         default_experts = [
             Expert(
-                name="Jane Smith",
+                name="Jane Umuhoza",
                 profile_picture='/static/img/jane.jpg',
                 specialization="Sustainable Agriculture",
                 bio="Jane specializes in sustainable farming practices and has been helping farmers for over a decade."
             ),
             Expert(
-                name="Mark Thompson",
+                name="Mark Muhire",
                 profile_picture='/static/img/mark.jpg',
                 specialization="Hydroponics",
                 bio="Mark is an expert in hydroponic farming systems, focusing on improving water use efficiency in agriculture."
             ),
             Expert(
-                name="Emily Green",
+                name="Emily Keza",
                 profile_picture='/static/img/emily.jpg',
                 specialization="Horticulture",
                 bio="Emily is a horticulturist with expertise in plant cultivation and advanced growing techniques."
@@ -208,6 +208,29 @@ def create_default_experts():
         # Add experts to the session and commit
         db.session.add_all(default_experts)
         db.session.commit()
+
+def create_default_expert_users():
+    # Define the default expert users
+    default_experts = [
+        {"username": "Jane Umuhoza", "email": "jane@gmail.com", "password": "password123", "role": "expert"},
+        {"username": "Mark Muhire", "email": "mark@gmail.com", "password": "password123", "role": "expert"},
+        {"username": "Emily keza", "email": "emily@gmail.com", "password": "password123", "role": "expert"},
+    ]
+
+    # Add each expert to the database if they don't already exist
+    for expert in default_experts:
+        user = User.query.filter_by(username=expert["username"]).first()
+        if user is None:
+            user = User(
+                username=expert["username"],
+                email=expert["email"],
+                role=expert["role"]
+            )
+            user.set_password(expert["password"])  # Hash and set the password
+            db.session.add(user)
+    
+    # Commit the new users to the database
+    db.session.commit()
 
 
 @app.route('/market', methods=['GET', 'POST'])
@@ -389,7 +412,6 @@ def checkout():
 def order_confirmation():
     return render_template('order_confirmation.html')
 
-
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -402,10 +424,11 @@ def hydroponic():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST']) 
 def login():
     if request.method == 'POST':
-        if request.form.get('form_type') == 'register':  # Registration form
+        # Handle registration
+        if request.form.get('form_type') == 'register':
             username = request.form.get('username')
             email = request.form.get('email')
             password = request.form.get('password')
@@ -427,27 +450,37 @@ def login():
             flash('Registration successful! Please log in.')
             return redirect(url_for('login'))
 
-        elif request.form.get('form_type') == 'login':  # Login form
-            # Login logic (authenticate user)
-            user = User.query.filter_by(username=request.form['username']).first()
+        # Handle login
+        elif request.form.get('form_type') == 'login':
+            user = User.query.filter_by(email=request.form['email']).first()
             if user and user.check_password(request.form['password']):
                 login_user(user)
-                # Check if the profile is complete
+
+                # Redirect based on the user's role and profile completion status
                 if not user.profile_complete:
-                    flash("Please complete your profile information.", "info")
-                    return redirect(url_for('profile'))
-                return redirect(url_for('dashboard'))  # Redirect to main dashboard if profile is complete
+                    if user.role == 'farmer':
+                        return redirect(url_for('profile'))
+                    elif user.role == 'expert':
+                        return redirect(url_for('expert_profile'))
+
+                # Check role and redirect accordingly
+                if user.role == 'farmer':
+                    return redirect(url_for('dashboard'))
+                elif user.role == 'expert':
+                    return redirect(url_for('expert_dashboard'))
+                
             flash("Invalid credentials", "error")
             return redirect(url_for('login'))
 
     # For GET request, simply render the login page
     return render_template('login.html')
 
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     if request.method == 'POST':
-        # Get the form data
+        # Get form data
         username = request.form.get('username', current_user.username)
         email = request.form.get('email', current_user.email)
         role = request.form.get('role', current_user.role)
@@ -460,6 +493,7 @@ def profile():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 filepath = os.path.join('static/uploads', filename)
+                os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
                 file.save(filepath)
                 current_user.profile_image_url = f"/static/uploads/{filename}"
             else:
@@ -470,13 +504,14 @@ def profile():
         current_user.email = email
         current_user.address = address
         current_user.phone = phone
-        current_user.profile_complete = True  # Mark profile as complete
-        db.session.commit()
+        current_user.profile_complete = True
+        db.session.commit()  # Save changes to the database
 
         flash("Profile updated successfully!", "success")
-        return redirect(url_for('dashboard'))  # Redirect to main dashboard after completion
+        return redirect(url_for('dashboard'))  # Redirect after update
 
     return render_template('profile.html', user=current_user)
+
 
 
 @app.route('/forums', methods=['GET', 'POST'])
@@ -600,7 +635,7 @@ def send_support():
     # You can also add logic to send the email or store the message
     # Example: send_email(name, email, message)
 
-    return redirect(url_for('help_page'))  # Redirect back to the help page
+    return redirect(url_for('help'))  # Redirect back to the help page
 
 @app.route('/expert', methods=['GET', 'POST'])
 def expert():
@@ -653,10 +688,173 @@ def send_message(expert_id):
 def dashboard():
     return render_template("dashboard.html")
 
-
 @app.route('/logout')
 def logout():   
     return render_template('login.html', title="Logout")
+
+@app.route('/expert-profile')
+@login_required
+def expert_profile():
+    if request.method == 'POST':
+        # Get form data
+        username = request.form.get('username', current_user.username)
+        email = request.form.get('email', current_user.email)
+        role = request.form.get('role', current_user.role)
+        address = request.form.get('address', current_user.address)
+        phone = request.form.get('phone', current_user.phone)
+
+        # Handle profile image upload
+        if 'profileImageInput' in request.files:
+            file = request.files['profileImageInput']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filepath = os.path.join('static/uploads', filename)
+                os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
+                file.save(filepath)
+                current_user.profile_image_url = f"/static/uploads/{filename}"
+            else:
+                flash("Invalid image format. Allowed formats are png, jpg, jpeg, and gif.", "error")
+
+        # Update user data and mark profile as complete
+        current_user.username = username
+        current_user.email = email
+        current_user.address = address
+        current_user.phone = phone
+        current_user.profile_complete = True
+        db.session.commit()  # Save changes to the database
+
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('expert-dashboard'))  # Redirect after update
+
+    return render_template('expert-profile.html', user=current_user)
+
+
+@app.route('/expert-dashboard')
+@login_required
+def expert_dashboard():
+    expert_id = current_user.id  # Assuming the logged-in user is the expert and using Flask-Login
+    # Fetch the expert's bookings and messages
+    bookings = Booking.query.filter_by(expert_id=expert_id).all()
+    messages = Message.query.filter_by(expert_id=expert_id).all()
+    
+    return render_template('expert-bookings.html', bookings=bookings, messages=messages)
+
+@app.route('/expert-settings', methods=['GET', 'POST'])
+@login_required
+def expert_account_settings():
+    if request.method == 'POST':
+        # Handle the change password functionality
+        if 'change_password' in request.form:
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+
+            # Verify current password
+            if not current_user.check_password(current_password):
+                flash('Incorrect current password.', 'error')
+            elif new_password != confirm_password:
+                flash('New password and confirmation do not match.', 'error')
+            else:
+                # Update password
+                current_user.set_password(new_password)
+                db.session.commit()
+                flash('Password updated successfully.', 'success')
+
+        # Handle the delete account functionality
+        elif 'delete_profile' in request.form:
+            db.session.delete(current_user)
+            db.session.commit()
+            flash('Your account has been deleted successfully.', 'success')
+            return redirect(url_for('login'))  # Redirect to the login page after deletion
+
+        return redirect(url_for('expert_account_settings'))  # Ensure the function name matches here
+
+    return render_template('expert-settings.html', user=current_user)  # Template rendering
+
+@app.route('/expert-help')
+def expert_help():   
+    return render_template('expert-help.html', title="Help")
+
+@app.route('/expert-help/contact', methods=['POST'])
+@login_required
+def expert_send_support():
+    name = request.form.get('name')
+    email = request.form.get('email')
+    message = request.form.get('message')
+    flash('Your message has been sent successfully. Our team will get back to you shortly.', 'success')
+    return redirect(url_for('expert_help')) 
+
+@app.route('/expert-forums', methods=['GET', 'POST'])
+def expert_forums():
+    categories = Category.query.all()
+    return render_template('expert-forums.html', categories=categories)
+
+@app.route('/expert-category/<int:category_id>')
+def expert_view_category(category_id):
+    category = Category.query.get(category_id)
+    if category:
+        posts = Post.query.filter_by(category_id=category_id).all()
+        return render_template('expert-category-post.html', category=category, posts=posts, category_id=category_id)
+    else:
+        flash("Category not found.", 'danger')
+        return redirect(url_for('bookings'))
+
+
+@app.route('/expert-category/<int:category_id>/posts', methods=['GET', 'POST'])
+def expert_category_posts(category_id):
+    category = Category.query.get_or_404(category_id)
+    posts = Post.query.filter_by(category_id=category_id).all()
+
+    # Handling the creation of a new post
+    if request.method == 'POST' and 'title' in request.form and 'content' in request.form:
+        title = request.form['title']
+        content = request.form['content']
+
+        # Handle user ID: if the user is logged in, use their ID; else, handle anonymous posts
+        user_id = current_user.id if current_user.is_authenticated else None
+
+        # Log the data for debugging
+        app.logger.debug(f'Creating post with title: {title}, content: {content}, user_id: {user_id}, category_id: {category.id}')
+        
+        new_post = Post(title=title, content=content, category_id=category.id, user_id=user_id)
+        db.session.add(new_post)
+        db.session.commit()
+
+        flash('Post created successfully!', 'success')
+        return redirect(url_for('expert_category_posts', category_id=category.id))
+
+    return render_template('expert-category-post.html', category=category, posts=posts)
+
+@app.route("/expert-view_post/<int:post_id>")
+def expert_view_post(post_id):
+    # Get the post by ID
+    post = Post.query.get_or_404(post_id)
+    
+    # Get all replies for this post
+    replies = Reply.query.filter_by(post_id=post_id).all()
+    
+    return render_template('expert-view_post.html', post=post, replies=replies)
+
+
+@app.route("/expert-reply_to_post", methods=["POST"])
+def expert_reply_to_post():
+    content = request.form['reply_content']
+    post_id = request.form['post_id']
+    reply_author = request.form.get('reply_author')  # Get the value of the reply_author field
+
+    # Check if the user wants to post anonymously or as themselves
+    if current_user.is_authenticated:
+        user_id = current_user.id  # Regular user posting
+    else:
+        user_id = None  # Anonymous if not logged in
+    
+    # Create the reply
+    reply = Reply(content=content, created_at=datetime.utcnow(), user_id=user_id, post_id=post_id)
+    db.session.add(reply)
+    db.session.commit()
+    
+    return redirect(url_for('expert_view_post', post_id=post_id))
+
 
 if __name__ == '__main__':
     # Initialize database
@@ -665,4 +863,6 @@ if __name__ == '__main__':
         create_default_categories()
         create_default_products()
         create_default_experts()
+        create_default_expert_users()
+
     app.run(debug=True)

@@ -1,0 +1,61 @@
+{% extends 'expert-base.html' %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col items-center text-center">
+        <h1 class="text-3xl font-semibold mb-6">Settings</h1>
+        <h4 class="text-black mb-6">Manage your account settings here.</h4>
+    </div>
+
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} text-center">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="bg-white shadow-lg rounded-lg p-8 space-y-8">
+        <!-- Change Password Form -->
+        <form method="POST" action="{{ url_for('expert_account_settings') }}">
+            <h3 class="text-xl font-semibold mb-4">Change Password</h3>
+            
+            <!-- Current Password -->
+            <div class="space-y-2">
+                <label for="current_password" class="text-sm font-medium text-gray-700">Current Password</label>
+                <input type="password" id="current_password" name="current_password" class="w-full p-3 border border-gray-300 rounded-md" required>
+            </div>
+
+            <!-- New Password -->
+            <div class="space-y-2">
+                <label for="new_password" class="text-sm font-medium text-gray-700">New Password</label>
+                <input type="password" id="new_password" name="new_password" class="w-full p-3 border border-gray-300 rounded-md" required>
+            </div>
+
+            <!-- Confirm New Password -->
+            <div class="space-y-2">
+                <label for="confirm_password" class="text-sm font-medium text-gray-700">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="w-full p-3 border border-gray-300 rounded-md" required>
+            </div>
+            
+            <!-- Change Password Button -->
+            <div class="mt-4"> <!-- Added margin-top here -->
+                <button type="submit" name="change_password" class="w-full py-3 bg-gray-900 text-white rounded-md hover:bg-green-600 transition">Change Password</button>
+            </div>
+            
+        </form>
+
+        <!-- Delete Profile Form -->
+        <form method="POST" action="{{ url_for('expert_account_settings') }}">
+            <h3 class="text-xl font-semibold mb-4">Delete Profile</h3>
+            <p class="text-sm text-gray-600 mb-4">Once your account is deleted, it cannot be undone. Are you sure you want to delete your profile?</p>
+            <button type="submit" name="delete_profile" class="w-full py-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition">Delete Account</button>
+        </form>
+    </div>
+{% endblock %}

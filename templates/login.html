@@ -11,6 +11,17 @@
 <body>
 
     <div class="login-page">
+        <!-- Flash messages section -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
         <div class="form">
             <section id="register-form">
                 <form class="register-form" action="{{ url_for('login') }}" method="POST">
@@ -18,7 +29,14 @@
                     <input type="text" name="username" placeholder="name" required/>
                     <input type="password" name="password" placeholder="password" required/>
                     <input type="text" name="email" placeholder="email address" required/>
-                    <input type="text" name="role" placeholder="Role" required/>
+
+                    <!-- Dropdown for Role -->
+                    <select name="role" required>
+                        <option value="" disabled selected>Select Role</option>
+                        <option value="farmer">Farmer</option>
+                        <option value="expert">Expert</option>
+                    </select>
+
                     <button type="submit">create</button>
                     <p class="message">Already registered? <a href="#login-form">Sign In</a></p>
                 </form>
@@ -26,7 +44,7 @@
             <section id="login-form">
                 <form class="login-form" action="{{ url_for('login') }}" method="POST">
                     <input type="hidden" name="form_type" value="login"/>
-                    <input type="text" name="username" placeholder="username" required/>
+                    <input type="email" name="email" placeholder="email" required/>
                     <input type="password" name="password" placeholder="password" required/>
                     <button type="submit">login</button>
                     <p class="message">Not registered? <a href="#register-form">Create an account</a></p>

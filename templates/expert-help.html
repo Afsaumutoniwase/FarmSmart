@@ -1,0 +1,99 @@
+{% extends 'expert-base.html' %}
+
+{% block title %}Help - Support{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col items-center text-center mt-8">
+        <h1 class="text-3xl font-semibold mb-4">Help & Support</h1>
+        <h4 class="text-gray-600 mb-8">Here you can find useful resources and support for your account.</h4>
+    </div>
+
+    <!-- Display Flash Messages if any -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} text-center">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Flex container for side-by-side cards -->
+    <div class="max-w-full mx-auto flex gap-8 mt-8 px-4">
+        <!-- FAQs Section (Left) -->
+        <div class="flex-grow bg-white shadow-lg rounded-lg p-8 space-y-8">
+            <h2 class="text-xl font-semibold mb-4">Frequently Asked Questions (FAQs)</h2>
+            <div class="space-y-6">  <!-- Increased space between FAQ pairs -->
+                <div class="space-y-2">
+                    <h3 class="text-lg font-semibold text-gray-800">How do I change my password?</h3>
+                    <p class="text-gray-600">To change your password, go to the settings page and enter your current password, then provide your new password and confirm it. Your password will be updated once submitted.</p>
+                </div>
+                
+                <div class="space-y-2">
+                    <h3 class="text-lg font-semibold text-gray-800">How can I delete my account?</h3>
+                    <p class="text-gray-600">To delete your account, go to the settings page and click "Delete Account". Be aware that this action is permanent and cannot be undone.</p>
+                </div>
+                
+                <!-- New questions about Market, Forum, and Booking Expert -->
+                <div class="space-y-2">
+                    <h3 class="text-lg font-semibold text-gray-800">How can I view people who booked me?</h3>
+                    <p class="text-gray-600">To view bookings, go to the 'Bookings' section from your profile. You will see a list of people who have booked sessions with you, including their details and scheduled times.</p>
+                </div>
+                
+                <div class="space-y-2">
+                    <h3 class="text-lg font-semibold text-gray-800">How can I check messages from users?</h3>
+                    <p class="text-gray-600">To check your messages, go to the 'Bookings' section in your dashboard. There, you can view all messages sent to you and respond accordingly.</p>
+                </div>
+                
+                <div class="space-y-2">
+                    <h3 class="text-lg font-semibold text-gray-800">How do I participate in the forum?</h3>
+                    <p class="text-gray-600">To participate in the forum, go to the 'Forum' section, create an account, and start interacting with others by posting questions, answering, or joining discussions.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="text-lg font-semibold text-gray-800">How can I access the settings?</h3>
+                    <p class="text-gray-600">To access your account settings, click on your profile icon in the top right corner and select 'Settings' from the dropdown menu. Here, you can update your profile, change your password, or delete your account.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="text-lg font-semibold text-gray-800">How do I log out?</h3>
+                    <p class="text-gray-600">To log out, click on your profile icon in the top right corner and select 'Logout' from the dropdown menu. This will log you out of your account securely.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Support Section (Right) -->
+        <div class="flex-grow bg-white shadow-lg rounded-lg p-8 space-y-8">
+            <h2 class="text-xl font-semibold mb-4">Contact Support</h2>
+            <p class="text-gray-600 mb-6">If you can't find the answer to your question or need further assistance, please don't hesitate to reach out to us!</p>
+
+            <!-- Contact Form -->
+            <form method="POST" action="{{ url_for('expert_send_support') }}">
+                <div class="space-y-4">
+                    <!-- Name -->
+                    <div>
+                        <label for="name" class="text-sm font-medium text-gray-700">Your Name</label>
+                        <input type="text" id="name" name="name" class="w-full p-3 border border-gray-300 rounded-md" required>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="text-sm font-medium text-gray-700">Your Email</label>
+                        <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 rounded-md" required>
+                    </div>
+
+                    <!-- Message -->
+                    <div>
+                        <label for="message" class="text-sm font-medium text-gray-700">Your Message</label>
+                        <textarea id="message" name="message" class="w-full p-3 border border-gray-300 rounded-md" rows="3" required></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-gray-900 text-white rounded-md hover:bg-blue-600 transition mt-4">Send Message</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

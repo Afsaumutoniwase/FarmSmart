@@ -1,0 +1,34 @@
+<div class="sidebar bg-slate-400" >
+    <div class="sidebar-header"><a href="{{ url_for('home') }}">FarmSmart</a></div>
+    <div class="sidebar-menu">
+        <!-- Bookings link with calendar icon -->
+        <a href="{{ url_for('expert_dashboard') }}" class="{% if request.path == url_for('expert_dashboard') %}active{% endif %}">
+            <span class="glyphicon glyphicon-calendar"></span> Bookings
+        </a>
+        
+        <!-- Forums link with comment icon -->
+        <a href="{{ url_for('expert_forums') }}" class="{% if request.path == url_for('expert_forums') %}active{% endif %}">
+            <span class="glyphicon glyphicon-comment"></span> Forums
+        </a>
+        
+        <!-- Profile link with user icon -->
+        <a href="{{ url_for('expert_profile') }}" class="{% if request.path == url_for('expert_profile') %}active{% endif %}">
+            <span class="glyphicon glyphicon-user"></span> Profile
+        </a>
+        
+        <!-- Settings link with cog icon -->
+        <a href="{{ url_for('expert_account_settings') }}" class="{% if request.path == url_for('expert_account_settings') %}active{% endif %}">
+            <span class="glyphicon glyphicon-cog"></span> Settings
+        </a>
+        
+        <!-- Help link with question-sign icon -->
+        <a href="{{ url_for('expert_help') }}" class="{% if request.path == url_for('expert_help') %}active{% endif %}">
+            <span class="glyphicon glyphicon-question-sign"></span> Help
+        </a>
+        
+        <!-- Logout link with log-out icon -->
+        <a href="{{ url_for('logout') }}" class="{% if request.path == url_for('logout') %}active{% endif %}">
+            <span class="glyphicon glyphicon-log-out"></span> Logout
+        </a>
+    </div>
+</div>
