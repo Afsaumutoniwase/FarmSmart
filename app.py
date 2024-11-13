@@ -23,6 +23,11 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.after_request
+def add_header(response):
+    response.cache_control.no_cache = True
+    return response
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True, nullable=False)
@@ -573,12 +578,16 @@ def update_booking_status(booking_id, status):
 @login_required
 def expert_dashboard():
     expert_id = current_user.id  # Assuming the logged-in user is the expert
+    db.session.expire_all()
+
+    # Fetch the expert's bookings along with related messages and user details
+    bookings = Booking.query.filter_by(expert_id=expert_id)\
+        .options(joinedload(Booking.user), joinedload(Booking.messages))\
+        .all()
     
-    # Fetch the expert's bookings with messages and user details
-    bookings = Booking.query.filter_by(expert_id=expert_id).options(joinedload(Booking.user), joinedload(Booking.messages)).all()
+   
     
     return render_template('expert-bookings.html', bookings=bookings)
-
 @app.route('/expert', methods=['GET', 'POST'])
 def expert():
     experts = Expert.query.all()
@@ -627,10 +636,13 @@ def send_message(booking_id):
 @app.route('/my_bookings')
 @login_required
 def my_bookings():
-    # Retrieve all bookings for the logged-in user
-    bookings = Booking.query.filter_by(user_id=current_user.id).all()
+    # Retrieve all bookings for the logged-in user, with related expert and message details
+    bookings = Booking.query.filter_by(user_id=current_user.id)\
+        .options(joinedload(Booking.expert), joinedload(Booking.messages))\
+        .order_by(Message.timestamp)\
+        .all()
+    
     return render_template('my_bookings.html', bookings=bookings)
-
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():

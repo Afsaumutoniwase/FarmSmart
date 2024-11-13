@@ -47,19 +47,10 @@
 
                 <button type="submit" class="mt-4 py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition">Book Session</button>
             </form>
-
-            <!-- Send Message Form -->
-            <form action="{{ url_for('send_message', booking_id=booking.id) }}" method="POST">
-
-                <div class="space-y-4">
-                    <label for="message" class="text-sm font-medium text-gray-700">Your Message</label>
-                    <textarea id="message" name="message_content" rows="4" class="w-full p-3 border border-gray-300 rounded-md" placeholder="Type your message here" required></textarea>
-                </div>
-                <button type="submit" class="mt-4 py-2 px-4 bg-green-900 text-white rounded-md hover:bg-green-600 transition">Send Message</button>
-            </form>
         </div>
         {% endfor %}
-        <a href="{{url_for('my_bookings')}}" class="mt-4 py-2 px-4 bg-green-900 text-white rounded-md hover:bg-green-600 transition">Check all your bookings</a>
-
+        <div class="flex justify-center mt-8">
+            <a href="{{url_for('my_bookings')}}" class="mt-4 py-2 px-4 bg-green-900 text-white rounded-md hover:bg-green-600 transition">Check all your bookings</a>
+        </div>
     </div>
 {% endblock %}
