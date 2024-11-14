@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% block title %}My Bookings{% endblock %}
 
 {% block content %}
@@ -11,15 +12,20 @@
             <h5 class="text-2xl font-semibold">Booking with Expert {{ booking.expert.name }} on {{ booking.session_datetime.strftime('%Y-%m-%d %H:%M') }}</h5>
             <p class="text-lg text-gray-700">Status: <span class="font-medium">{{ booking.status }}</span></p>
         </div>
-        
+
         <!-- Message Thread -->
         <div class="mb-4">
             <h6 class="text-xl font-semibold mb-2">Message Thread</h6>
             {% for message in booking.messages %}
-                <div class="p-4 mb-2 bg-gray-100 rounded-lg">
-                    <strong class="text-green-600">{{ 'Me' if message.sender_id == current_user.id else 'expert' }}:</strong>
-                    <p class="text-gray-800">{{ message.content }}</p>
-                    <small class="text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                <div class="p-4 mb-2 bg-gray-100 rounded-lg flex items-start">
+                    <!-- Profile Image of the sender -->
+                    <img src="{{ url_for('static', filename='img/' + (message.sender.profile_image_url if message.sender_id != current_user.id else current_user.profile_image_url)) }}" 
+                         alt="Profile Image" class="rounded-full border border-gray-300 mr-4" width="40" height="40">
+                    <div>
+                        <strong class="text-green-600">{{ 'Me' if message.sender_id == current_user.id else 'Expert' }}:</strong>
+                        <p class="text-gray-800">{{ message.content }}</p>
+                        <small class="text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
                 </div>
             {% endfor %}
         </div>

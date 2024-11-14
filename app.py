@@ -1,6 +1,7 @@
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 import os
+import random
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,7 +9,7 @@ from flask import render_template, Flask, request, redirect, url_for, session
 from flask_login import login_user, LoginManager, UserMixin, current_user, login_required
 from flask import flash
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = 'farm smart'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -34,6 +35,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(50))
+    gender = db.Column(db.String(50))
     address = db.Column(db.String(200))
     phone = db.Column(db.String(20))
     profile_image_url = db.Column(db.String(200), nullable=True)
@@ -206,9 +208,9 @@ def create_default_experts():
 def create_default_expert_users():
     # Define the default expert users
     default_experts = [
-        {"username": "Jane Umuhoza", "email": "jane@gmail.com", "password": "password123", "role": "expert"},
-        {"username": "Mark Muhire", "email": "mark@gmail.com", "password": "password123", "role": "expert"},
-        {"username": "Emily keza", "email": "emily@gmail.com", "password": "password123", "role": "expert"},
+        {"username": "Jane Umuhoza", "email": "jane@gmail.com", "password": "password123", "role": "expert", "gender": "Female","profile_image_url": "jane.jpg"},
+        {"username": "Mark Muhire", "email": "mark@gmail.com", "password": "password123", "role": "expert", "gender": "Male","profile_image_url": "mark.jpg"},
+        {"username": "Emily keza", "email": "emily@gmail.com", "password": "password123", "role": "expert", "gender": "Female","profile_image_url": "emily.jpg"},
     ]
 
     # Add each expert to the database if they don't already exist
@@ -218,7 +220,9 @@ def create_default_expert_users():
             user = User(
                 username=expert["username"],
                 email=expert["email"],
-                role=expert["role"]
+                role=expert["role"],
+                gender = expert["gender"],
+                profile_image_url = expert["profile_image_url"]
             )
             user.set_password(expert["password"])  # Hash and set the password
             db.session.add(user)
@@ -418,7 +422,21 @@ def hydroponic():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route('/login', methods=['GET', 'POST']) 
+
+# Define the avatars for male and female
+male_avatars = ['profilem1.jpg', 'profilem2.png']
+female_avatars = ['profilew1.jpg', 'profilew2.jpeg', 'profilew3.jpeg']
+
+def assign_avatar(gender):
+    """Assign a random avatar based on gender."""
+    if gender == 'Male':
+        return random.choice(male_avatars)
+    elif gender == 'Female':
+        return random.choice(female_avatars)
+    else:
+        return 'default_avatar.jpg'  # Default avatar if gender is unspecified
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         # Handle registration
@@ -427,6 +445,7 @@ def login():
             email = request.form.get('email')
             password = request.form.get('password')
             role = request.form.get('role')
+            gender = request.form.get('gender')  # Capture gender input
 
             # Check if user already exists
             if User.query.filter_by(username=username).first():
@@ -436,8 +455,11 @@ def login():
                 flash('Email already in use')
                 return redirect(url_for('login') + '#register-form')
 
+            # Assign an avatar based on gender
+            avatar_name = assign_avatar(gender)
+
             # Register new user
-            new_user = User(username=username, email=email, role=role)
+            new_user = User(username=username, email=email, role=role, gender=gender, profile_image_url=avatar_name)
             new_user.set_password(password)
             db.session.add(new_user)
             db.session.commit()
@@ -460,13 +482,33 @@ def login():
                 if user.role == 'farmer':
                     return redirect(url_for('dashboard'))
                 elif user.role == 'expert':
-                    return redirect(url_for('expert_dashboard'))  # Redirect to expert_booking
+                    return redirect(url_for('expert_dashboard'))
 
             flash("Invalid credentials", "error")
             return redirect(url_for('login'))
 
-    # For GET request, simply render the login page
     return render_template('login.html')
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        # Collect form data
+        username = request.form.get('username', current_user.username)
+        email = request.form.get('email', current_user.email)
+        address = request.form.get('address', current_user.address)
+        phone = request.form.get('phone', current_user.phone)
+
+        # Update user data with new information
+        current_user.username = username
+        current_user.email = email
+        current_user.address = address
+        current_user.phone = phone
+        db.session.commit()
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('profile.html', user=current_user)
 
 @app.route('/expert-profile', methods=['GET', 'POST'])
 @login_required
@@ -478,18 +520,6 @@ def expert_profile():
         role = request.form.get('role', current_user.role)
         address = request.form.get('address', current_user.address)
         phone = request.form.get('phone', current_user.phone)
-
-        # Handle profile image upload
-        if 'profileImageInput' in request.files:
-            file = request.files['profileImageInput']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join('static/uploads', filename)
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
-                file.save(filepath)
-                current_user.profile_image_url = f"/static/uploads/{filename}"
-            else:
-                flash("Invalid image format. Allowed formats are png, jpg, jpeg, and gif.", "error")
 
         # Update user data and mark profile as complete
         current_user.username = username
@@ -638,46 +668,11 @@ def send_message(booking_id):
 def my_bookings():
     # Retrieve all bookings for the logged-in user, with related expert and message details
     bookings = Booking.query.filter_by(user_id=current_user.id)\
-        .options(joinedload(Booking.expert), joinedload(Booking.messages))\
-        .order_by(Message.timestamp)\
-        .all()
+    .options(joinedload(Booking.expert), joinedload(Booking.messages))\
+    .all()
+
     
     return render_template('my_bookings.html', bookings=bookings)
-@app.route('/profile', methods=['GET', 'POST'])
-@login_required
-def profile():
-    if request.method == 'POST':
-        # Get form data
-        username = request.form.get('username', current_user.username)
-        email = request.form.get('email', current_user.email)
-        role = request.form.get('role', current_user.role)
-        address = request.form.get('address', current_user.address)
-        phone = request.form.get('phone', current_user.phone)
-
-        # Handle profile image upload
-        if 'profileImageInput' in request.files:
-            file = request.files['profileImageInput']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join('static/uploads', filename)
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
-                file.save(filepath)
-                current_user.profile_image_url = f"/static/uploads/{filename}"
-            else:
-                flash("Invalid image format. Allowed formats are png, jpg, jpeg, and gif.", "error")
-
-        # Update user data and mark profile as complete
-        current_user.username = username
-        current_user.email = email
-        current_user.address = address
-        current_user.phone = phone
-        current_user.profile_complete = True
-        db.session.commit()  # Save changes to the database
-
-        flash("Profile updated successfully!", "success")
-        return redirect(url_for('dashboard'))  # Redirect after update
-
-    return render_template('profile.html', user=current_user)
 
 @app.route('/forums', methods=['GET', 'POST'])
 def forums():

@@ -51,10 +51,15 @@
             <h3 class="font-semibold mb-2">Booking with {{ booking.user.username }} (Session on {{ booking.session_datetime }})</h3>
             <ul class="space-y-4">
                 {% for message in booking.messages %}
-                    <li class="border-b pb-4">
-                        <p class="font-semibold">{{ message.sender.username }}:</p>
-                        <p class="text-gray-600">{{ message.content }}</p>
-                        <p class="text-sm text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <li class="border-b pb-4 flex items-start">
+                        <!-- Profile Image of the sender -->
+                        <img src="{{ url_for('static', filename='img/' + (message.sender.profile_image_url if message.sender_id != current_user.id else current_user.profile_image_url)) }}" 
+                             alt="Profile Image" class="rounded-full border border-gray-300 mr-4" width="40" height="40">
+                        <div>
+                            <p class="font-semibold">{{ message.sender.username }}:</p>
+                            <p class="text-gray-600">{{ message.content }}</p>
+                            <p class="text-sm text-gray-500">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
                     </li>
                 {% endfor %}
             </ul>
@@ -67,6 +72,5 @@
         <p class="text-gray-600">No messages yet.</p>
     {% endif %}
 </div>
-
 
 {% endblock %}

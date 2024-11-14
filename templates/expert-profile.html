@@ -10,7 +10,13 @@
 
     <!-- Profile Form Section -->
     <div class="bg-white shadow-lg rounded-lg p-8 space-y-8">
-
+        <div class="text-center">
+            <div class="flex flex-col items-center">
+                <img src="{{ url_for('static', filename='img/' + user.profile_image_url) }}" 
+                     alt="Profile Image" id="profileImage" width="150" height="150" class="rounded-full border border-gray-300 mb-4">
+            </div>
+        </div>
+        
         <!-- Editable Profile Form -->
         <form method="POST" action="{{ url_for('expert_profile') }}" enctype="multipart/form-data" class="space-y-4">
             <div class="space-y-2">
@@ -26,6 +32,10 @@
                 <label for="role" class="text-sm font-medium text-gray-700">Role</label>
                 <input type="text" id="role" name="role" class="w-full p-3 border border-gray-300 rounded-md" value="{{ user.role }}" readonly>
             </div>
+            <div class="space-y-2">
+                <label for="gender" class="text-sm font-medium text-gray-700">Gender</label>
+                <input type="text" id="gender" name="gender" class="w-full p-3 border border-gray-300 rounded-md" value="{{ user.gender }}" readonly>
+            </div>
             
             <div class="space-y-2">
                 <label for="address" class="text-sm font-medium text-gray-700">Address</label>
@@ -40,21 +50,4 @@
             <button type="submit" class="w-full py-3 bg-gray-900 text-white rounded-md hover:bg-gray-600 transition">Save Changes</button>
         </form>
     </div>
-
-    <!-- JavaScript for Image Preview -->
-    <script>
-        const profileImageInput = document.getElementById('profileImageInput');
-        const profileImage = document.getElementById('profileImage');
-        
-        profileImageInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    profileImage.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-    </script>
 {% endblock %}
