@@ -4,8 +4,12 @@
 
 {% block content %}
     <div class="container mx-auto p-6">
-        <div class="flex flex-col items-center text-center">
-            <h1 class="text-3xl font-semibold mb-6">Welcome to the Forums</h1>
+        <div class="bg-gradient-to-r from-[#28844b] via-[#a8cf45] to-[#799928] text-white py-10 rounded-lg shadow-lg mb-4">
+            <div class="text-center">
+                <h1 class="text-4xl font-extrabold text-[#fff9f9] drop-shadow-md">Welcome to Our Forums</h1>
+                <p class="text-lg mt-2 font-medium text-[#ecfccb]">
+                    Share your knowledge and connect with like-minded individuals.</p>
+            </div>
         </div>
 
         <!-- Flash Messages -->
@@ -21,9 +25,7 @@
 
         <!-- Forum Categories -->
         <div class="mb-6">
-            <div class="flex flex-col items-center text-center">
-                <h3 class="text-2xl font-semibold mb-4">Forum Categories</h3>
-            </div>
+           
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for category in categories %}
                     <div class="bg-gradient-to-r from-green-100 via-grey-200 to-white-300 shadow-lg rounded-md p-6 hover:shadow-xl transition duration-300 ease-in-out">

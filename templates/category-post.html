@@ -4,10 +4,12 @@
 
 {% block content %}
 <div class="container mx-auto p-6">
-    <h2 class="text-3xl font-semibold mb-8 text-center text-gray-800">
-        Posts in Category {{ category.name }}
-    </h2>
-
+    <div class="bg-gradient-to-r from-[#28844b] via-[#a8cf45] to-[#799928] text-white py-10 rounded-lg shadow-lg mb-4">
+        <div class="text-center">
+            <h2 class="text-4xl font-extrabold text-[#fff9f9] drop-shadow-md"> Posts in Category {{ category.name }}</h>
+        
+        </div>
+    </div>
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

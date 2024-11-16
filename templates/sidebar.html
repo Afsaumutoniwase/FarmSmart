@@ -1,5 +1,9 @@
 <div class="sidebar">
-    <div class="sidebar-header"><a href="{{ url_for('home') }}">FarmSmart</a></div>
+    <div class="sidebar-header">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
+        </a>
+    </div>
     <div class="sidebar-menu">
         <a href="{{ url_for('dashboard') }}" class="{% if request.path == url_for('dashboard') %}active{% endif %}">
             <span class="glyphicon glyphicon-leaf"></span> Hydroponic
@@ -7,7 +11,6 @@
         <a href="{{ url_for('expert') }}" class="{% if request.path == url_for('expert') %}active{% endif %}">
             <span class="glyphicon glyphicon-briefcase"></span> Book an Expert
         </a>
-        
         <a href="{{ url_for('forums') }}" class="{% if request.path == url_for('forums') %}active{% endif %}">
             <span class="glyphicon glyphicon-comment"></span> Forums
         </a>
@@ -16,6 +19,9 @@
         </a>
         <a href="{{ url_for('profile') }}" class="{% if request.path == url_for('profile') %}active{% endif %}">
             <span class="glyphicon glyphicon-user"></span> Profile
+        </a>
+        <a href="{{ url_for('resources') }}" class="{% if request.path == url_for('resources') %}active{% endif %}">
+            <span class="glyphicon glyphicon-book"></span> Resources
         </a>
         <a href="{{ url_for('account_settings') }}" class="{% if request.path == url_for('account_settings') %}active{% endif %}">
             <span class="glyphicon glyphicon-cog"></span> Settings

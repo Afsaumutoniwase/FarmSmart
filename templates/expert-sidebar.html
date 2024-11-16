@@ -1,5 +1,5 @@
 <div class="sidebar bg-slate-400" >
-    <div class="sidebar-header"><a href="{{ url_for('home') }}">FarmSmart</a></div>
+    <div class="sidebar-header"><a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='img/expert-logo.png') }}" alt="Logo"></a></div>
     <div class="sidebar-menu">
         <!-- Bookings link with calendar icon -->
         <a href="{{ url_for('expert_dashboard') }}" class="{% if request.path == url_for('expert_dashboard') %}active{% endif %}">
