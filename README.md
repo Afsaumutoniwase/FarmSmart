@@ -46,7 +46,7 @@ FarmSmart empowers farmers with tools and insights to embrace hydroponic farming
 
 FarmSmart uses modern tools and frameworks for an efficient and user-friendly experience:  
 
-- **Frontend:** Html, Tailwind CSS, JavaScript, HTML5  
+- **Frontend:** Tailwind CSS, JavaScript, HTML5  
 - **Backend:** Python (Flask Framework)  
 - **Database:** SQLite  
 - **APIs:** RESTful APIs for data integration  
