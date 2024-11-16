@@ -56,9 +56,9 @@ FarmSmart is a digital platform focused on empowering African smallholder farmer
 
 FarmSmart leverages modern tools and frameworks to deliver an efficient and seamless experience:  
 
-- **Frontend:** HTML5, CSS3, JavaScript, Bootstrap  
+- **Frontend:** HTML5, CSS, JavaScript, Bootstrap, tailwind  
 - **Backend:** Python (Flask Framework)  
-- **Database:** SQLite/PostgreSQL  
+- **Database:** SQLite  
 - **APIs:** REST APIs for data interaction  
 - **Additional Tools:** AOS for animations, PureCounter for dynamic stats  
 
