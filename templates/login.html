@@ -10,20 +10,24 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-
     <div class="login-page">
-        <!-- Flash messages section -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <ul class="flashes">
-              {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        {% endwith %}
+        <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-lg relative">
+            <!-- Flash messages section -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            {% endwith %}
+        </div>  
 
         <div class="form">
+            <div class="flex justify-center mb-6">
+                <img src="{{ url_for('static', filename='img/main-logo.png') }}" alt="FarmSmart Logo" class="h-5">
+            </div>
             <section id="register-form">
                 <form class="register-form" action="{{ url_for('login') }}" method="POST">
                     <input type="hidden" name="form_type" value="register"/>
@@ -58,6 +62,10 @@
             </section>
         </div>
     </div>
-<script src="../static/js/login.js"></script>
+<script>
+    $('.message a').click(function(){
+    $('form').animate({height: "toggle", opacity: "toggle"}, "slow");
+ });
+</script>
 </body>
 </html>
