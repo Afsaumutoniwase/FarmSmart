@@ -29,8 +29,10 @@
         <a href="{{ url_for('help') }}" class="{% if request.path == url_for('help') %}active{% endif %}">
             <span class="glyphicon glyphicon-question-sign"></span> Help
         </a>
-        <a href="{{ url_for('logout') }}" class="{% if request.path == url_for('logout') %}active{% endif %}">
-            <span class="glyphicon glyphicon-log-out"></span> Logout
+        <a href="{{ url_for('logout') }}" 
+           class="flex items-center justify-center px-2 py-0 rounded bg-lime-600 text-white">
+            <span class="glyphicon glyphicon-log-out"></span>
+            <span>Logout</span>
         </a>
     </div>
 </div>
