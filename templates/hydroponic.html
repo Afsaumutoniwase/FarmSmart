@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>FarmSmart</title>
+  <title>EzaSmart</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
@@ -29,9 +29,91 @@
   <!-- Main CSS File -->
   <link href="{{ url_for('static', filename='css/hydroponic.css') }}" rel="stylesheet">
   <link href="../static/css/hydroponic.css" rel="stylesheet">
+  
+  <style>
+    /* Smooth page transitions */
+    body {
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    /* Decorative elements */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 20% 50%, rgba(114, 191, 120, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(56, 127, 57, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+      animation: float 20s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+      33% {
+        transform: translate(30px, -30px) rotate(5deg);
+      }
+      66% {
+        transform: translate(-20px, 20px) rotate(-5deg);
+      }
+    }
+    
+    .page-transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .page-transition-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .transition-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #22c55e;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 
 <body class="index-page">
+  <!-- Page Transition Overlay -->
+  <div class="page-transition-overlay" id="page-transition">
+    <div class="transition-spinner"></div>
+  </div>
 
   <header id="header" class="header d-flex align-items-center sticky-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
@@ -39,7 +121,7 @@
       <a href="{{ url_for('home') }}" class="logo d-flex align-items-center me-auto">
         <!-- Uncomment the line below if you also wish to use an image logo -->
         <!-- <img src="assets/img/logo.png" alt=""> -->
-        <img src="{{ url_for('static', filename='img/main-logo.png') }}" alt="logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="logo">
       </a>
 
       <nav id="navmenu" class="navmenu">
@@ -290,17 +372,17 @@
     <div class="container footer-top">
       <div class="row gy-4">
         
-        <!-- About FarmSmart -->
-        <div class="col-lg-5 col-md-12 footer-about">
-          <a href="{{ url_for('home') }}" class="logo d-flex align-items-center">
-            <span class="sitename">FarmSmart</span>
+        <!-- About EzaSmart -->
+        <div class="col-lg-3 col-md-6 footer-about">
+          <a href="index.html" class="logo d-flex align-items-center">
+            <span class="sitename">EzaSmart</span>
           </a>
-          <p>FarmSmart empowers smallholder farmers by providing sustainable farming technologies, such as hydroponics and smart irrigation, that help increase yields, reduce water usage, and ensure food security across Africa.</p>
+          <p>EzaSmart empowers smallholder farmers by providing sustainable farming technologies, such as hydroponics and smart irrigation, that help increase yields, reduce water usage, and ensure food security across Africa.</p>
           <div class="social-links d-flex mt-4">
-            <a href="https://twitter.com/FarmSmart"><i class="bi bi-twitter"></i></a>
-            <a href="https://facebook.com/FarmSmart"><i class="bi bi-facebook"></i></a>
-            <a href="https://instagram.com/FarmSmart"><i class="bi bi-instagram"></i></a>
-            <a href="https://linkedin.com/company/FarmSmart"><i class="bi bi-linkedin"></i></a>
+            <a href="https://twitter.com/EzaSmart"><i class="bi bi-twitter"></i></a>
+            <a href="https://facebook.com/EzaSmart"><i class="bi bi-facebook"></i></a>
+            <a href="https://instagram.com/EzaSmart"><i class="bi bi-instagram"></i></a>
+            <a href="https://linkedin.com/company/EzaSmart"><i class="bi bi-linkedin"></i></a>
           </div>
         </div>
 
@@ -319,7 +401,7 @@
         <div class="col-lg-2 col-6 footer-links">
           <h4>Our Services</h4>
           <ul>
-            <li><a href="{{ url_for('hydroponic') }}">Hydroponic Systems</a></li>
+            <li><a href="{{ url_for('home') }}#hydroponic-systems">Hydroponic Systems</a></li>
             <li><a href="{{ url_for('home') }}">Farm Management Tools</a></li>
             <li><a href="{{ url_for('home') }}">Farmer Training</a></li>
             <li><a href="{{ url_for('home') }}">Support forums</a></li>
@@ -343,7 +425,7 @@
 
     <!-- Copyright Section -->
     <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="px-1 sitename">FarmSmart</strong> <span>All Rights Reserved</span></p>
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">EzaSmart</strong> <span>All Rights Reserved</span></p>
     </div>
 
   </footer>
@@ -366,6 +448,71 @@
   <!-- Main JS File -->
   <script src="{{ url_for('static', filename='js/hydroponic.js') }}"></script>
   <script src="../static/js/hydroponic.js"></script>
+
+  <!-- EzaSmart Hydroponics Chatbot -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+  <div id="chatbot-widget" class="chatbot-widget">
+    <button class="chatbot-toggle" aria-label="Open chat" title="Chat with EzaSmart AI Assistant">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="EzaSmart">
+    </button>
+    <div class="chatbot-panel">
+      <div class="chatbot-header">
+        <span>EzaSmart Assistant</span>
+        <button class="chatbot-close" aria-label="Close">×</button>
+      </div>
+      <div class="chatbot-messages"></div>
+      <div class="chatbot-input-area">
+        <textarea class="chatbot-input" placeholder="Ask about hydroponics..." rows="1"></textarea>
+        <button class="chatbot-send">Send</button>
+      </div>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+
+  <!-- Page Transition Script -->
+  <script>
+    // Smooth page transitions
+    document.addEventListener('DOMContentLoaded', function() {
+      const transitionOverlay = document.getElementById('page-transition');
+      
+      // Fade out overlay on page load
+      setTimeout(() => {
+        transitionOverlay.classList.remove('active');
+      }, 100);
+      
+      // Add smooth transition to all navigation links
+      const links = document.querySelectorAll('a:not([target="_blank"]):not([href^="#"]):not(.no-transition)');
+      
+      links.forEach(link => {
+        link.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          
+          // Skip if it's a javascript link or external
+          if (!href || href === '#' || href.startsWith('javascript:') || 
+              this.hostname !== window.location.hostname) {
+            return;
+          }
+          
+          e.preventDefault();
+          
+          // Show transition overlay
+          transitionOverlay.classList.add('active');
+          
+          // Navigate after a brief delay
+          setTimeout(() => {
+            window.location.href = href;
+          }, 300);
+        });
+      });
+      
+      // Handle browser back/forward buttons
+      window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+          transitionOverlay.classList.remove('active');
+        }
+      });
+    });
+  </script>
 
 </body>
 

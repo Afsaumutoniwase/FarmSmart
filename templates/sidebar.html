@@ -5,17 +5,11 @@
         </a>
     </div>
     <div class="sidebar-menu">
-        <a href="{{ url_for('dashboard') }}" class="{% if request.path == url_for('dashboard') %}active{% endif %}">
-            <span class="glyphicon glyphicon-leaf"></span> Hydroponic
-        </a>
-        <a href="{{ url_for('expert') }}" class="{% if request.path == url_for('expert') %}active{% endif %}">
-            <span class="glyphicon glyphicon-briefcase"></span> Book an Expert
-        </a>
         <a href="{{ url_for('forums') }}" class="{% if request.path == url_for('forums') %}active{% endif %}">
             <span class="glyphicon glyphicon-comment"></span> Forums
         </a>
-        <a href="{{ url_for('market') }}" class="{% if request.path == url_for('market') %}active{% endif %}">
-            <span class="glyphicon glyphicon-shopping-cart"></span> Market
+        <a href="{{ url_for('dashboard') }}" class="{% if request.path == url_for('dashboard') %}active{% endif %}">
+            <span class="glyphicon glyphicon-leaf"></span> Hydroponic
         </a>
         <a href="{{ url_for('profile') }}" class="{% if request.path == url_for('profile') %}active{% endif %}">
             <span class="glyphicon glyphicon-user"></span> Profile
@@ -30,9 +24,10 @@
             <span class="glyphicon glyphicon-question-sign"></span> Help
         </a>
         <a href="{{ url_for('logout') }}" 
-           class="flex items-center justify-center px-2 py-0 rounded bg-lime-600 text-white">
-            <span class="glyphicon glyphicon-log-out"></span>
-            <span>Logout</span>
+           class="flex items-center justify-center px-2 py-0 rounded"
+           style="background: linear-gradient(135deg, #28844b 0%, #1f6938 100%); color: white !important;">
+            <span class="glyphicon glyphicon-log-out" style="color: white !important;"></span>
+            <span style="color: white !important;">Logout</span>
         </a>
     </div>
 </div>
